@@ -1,6 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import logo from './assets/logo-dark.svg'
+import logo from './assets/logo-white.svg'
 
 // Pages
 import Home from './pages/Home'
@@ -22,7 +22,7 @@ function App() {
   return (
     <Router>
       <div className="app-root">
-        <header className="app-header" style={{ padding: '12px 24px', borderBottom: '1px solid #eee', background: '#fff' }}>
+        <header className="app-header" style={{ padding: '12px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))' }}>
           <img src={logo} alt="VES logo" style={{ height: 40 }} />
         </header>
         <main className="app-main" style={{ padding: 24 }}>

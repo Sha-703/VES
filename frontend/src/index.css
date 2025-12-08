@@ -61,7 +61,7 @@ body {
   content: "";
   position: fixed;
   inset: 0;
-  background-image: url('/src/assets/logo.svg');
+  background-image: url('/src/assets/logo-white.svg');
   background-repeat: no-repeat;
   background-position: center center;
   /* larger responsive logo for stronger visual */

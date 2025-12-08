@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/logo-dark.svg';
+import logo from '../assets/logo-white.svg';
 
 export default function Home() {
   const navigate = useNavigate();

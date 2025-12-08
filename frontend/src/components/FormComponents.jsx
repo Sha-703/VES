@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from '../assets/logo-white.svg';
 
 export function FormField({ label, type = 'text', name, value, onChange, required = false, rows = null, ...props }) {
   return (
@@ -71,7 +72,7 @@ export function Footer() {
     <footer style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))', color: 'white', padding: '18px 20px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/src/assets/logo.svg" alt="VES" style={{ width: 38, height: 38, borderRadius: 6 }} />
+          <img src={logo} alt="VES" style={{ width: 38, height: 38, borderRadius: 6 }} />
           <div>
             <strong>VES — Vote Électronique Sûr</strong>
             <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>© {new Date().getFullYear()} - Projet interne</div>
