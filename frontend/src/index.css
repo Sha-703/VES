@@ -64,21 +64,24 @@ body {
   background-image: url('/src/assets/logo.svg');
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: 40vmin; /* responsive large logo */
-  opacity: 0.6; /* light, subtle */
-  filter: blur(2px) grayscale(10%);
+  /* larger responsive logo for stronger visual */
+  background-size: 60vmin;
+  /* moderate opacity so the logo is visible but not overpowering */
+  opacity: 0.5;
+  /* stronger blur to reproduce the soft diffused look from your screenshot */
+  filter: blur(8px) grayscale(8%);
   pointer-events: none;
   z-index: 0;
-  background-size: 60vmin;
 }
 /* Slight overlay above the blurred logo to dim the page */
 .app-root::after {
   content: "";
   position: fixed;
   inset: 0;
-  background-color: rgba(0,0,0,0.06);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  /* darker, soft black overlay to dim the page and give the logo a tinted appearance */
+  background-color: rgba(0,0,0,0.18);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   pointer-events: none;
   z-index: 1;
 }
