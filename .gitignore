@@ -1,0 +1,21 @@
+# Node / frontend
+/frontend/node_modules/
+/frontend/dist/
+/frontend/build/
+
+# Electron build artifacts
+*.exe
+*.AppImage
+*.deb
+*.rpm
+*.dmg
+*.asar
+
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+
+# System
+.DS_Store
+Thumbs.db

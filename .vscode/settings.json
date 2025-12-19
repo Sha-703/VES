@@ -1,0 +1,8 @@
+{
+  "python.analysis.extraPaths": [
+    "./backend",
+    "./backend/elections_project",
+    "./backend/elections_app"
+  ],
+  "python.analysis.logLevel": "Error"
+}

@@ -1,0 +1,31 @@
+ services:
+  - type: web
+    name: elections-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    branch: main
+    plan: free
+    startCommand: /app/entrypoint.sh
+    envVars:
+      - key: SECRET_KEY
+        value: "CHANGE_ME"
+      - key: DATABASE_URL
+        value: "postgres://user:pass@host:5432/dbname"
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*"
+
+  - type: static_site
+    name: elections-frontend
+    branch: main
+    plan: free
+    buildCommand: "cd frontend && npm ci && npm run build"
+    publishPath: frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: "https://ves-mg2a.onrender.com/api/"
+
+# Notes:
+# - Replace SECRET_KEY and DATABASE_URL with secure values in the Render dashboard (do NOT store real secrets in the repo).
+# - After importing this repo into Render, update the env vars in each service to the real values (DATABASE_URL from a Managed Database, SECRET_KEY secret string, etc.).
