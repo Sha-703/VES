@@ -25,7 +25,7 @@ export default function VoteElection() {
 
   const loadElection = async () => {
     try {
-      const res = await getElection(electionId);
+      const res = await getElection(electionId, voterId);
       if (res.data?.voter_has_voted) {
         setError('Désolé vous avez déjà voté pour cette élection');
         setElection(res.data);
