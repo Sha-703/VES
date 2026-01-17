@@ -1,13 +1,13 @@
 from django.contrib import admin
 from elections_app.models import AuditLog
 
-# Import subpackage admin modules so their registrations run at startup and all models
-# are registered in the admin site (makes them clickable from the admin index).
+ # Importer les modules admin des sous-paquets pour que leurs enregistrements s'exécutent au démarrage et que tous les modèles
+ # soient enregistrés dans le site d'administration (et donc accessibles depuis l'index admin).
 try:
-    # force import to register models defined in institution and voter admin modules
+    # import forcé pour enregistrer les modèles définis dans les modules admin institution et voter
     import elections_app.institution.admin  # noqa: F401
 except Exception:
-    # Import errors should be visible in logs; continue to register AuditLog
+    # Les erreurs d'import doivent être visibles dans les logs ; continuer à enregistrer AuditLog
     pass
 
 try:

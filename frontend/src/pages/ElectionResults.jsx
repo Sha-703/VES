@@ -27,7 +27,7 @@ export default function ElectionResults() {
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    // initial load + polling every 5s
+    // Chargement initial + actualisation toutes les 5 secondes
     let mounted = true;
     const doLoad = async () => {
       if (!mounted) return;

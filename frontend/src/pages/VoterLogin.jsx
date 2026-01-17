@@ -20,7 +20,7 @@ export default function VoterLogin() {
     try {
       const res = await voterLogin(form.identifier, form.institution_id);
       localStorage.setItem('voter_id', res.data.voter_id);
-      // le backend renvoie parfois encore un nom de votant ; le sauvegarder si présent
+      // Le backend renvoie parfois encore un nom de votant ; le sauvegarder si présent
       if (res.data.name) localStorage.setItem('voter_name', res.data.name);
       localStorage.setItem('institution_id', form.institution_id);
       navigate('/voter/ballots');

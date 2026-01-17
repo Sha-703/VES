@@ -148,18 +148,18 @@ class InstitutionViewSet(viewsets.ModelViewSet):
     def my_institution(self, request):
         # Return or update institution info and basic import statistics.
         institution = get_object_or_404(Institution, user=request.user)
-        # Initialize import-related counters in case none exist
+        # Initialiser les compteurs liés à l'import en cas d'absence
         created = 0
         updated = 0
         errors = []
 
         if request.method == 'PATCH':
-            # Allow updating institution name/description and the related user email/password
+            # Permettre la mise à jour du nom/description de l'institution et de l'email/mot de passe utilisateur associé
             data = request.data or {}
             user = request.user
             changed = False
 
-            # Institution fields: accept either 'institution_name' or 'name'
+            # Champs institution : accepter 'institution_name' ou 'name'
             inst_name = data.get('institution_name') or data.get('name')
             if inst_name is not None and inst_name != institution.name:
                 institution.name = inst_name
@@ -170,14 +170,14 @@ class InstitutionViewSet(viewsets.ModelViewSet):
                 institution.description = inst_desc
                 changed = True
 
-            # Update user email if provided
+            # Mettre à jour l'email utilisateur si fourni
             email = data.get('email')
             if email and email != getattr(user, 'email', None):
                 user.email = email
                 user.save()
                 changed = True
 
-            # Update user password if provided
+            # Mettre à jour le mot de passe utilisateur si fourni
             password = data.get('password')
             if password:
                 try:
@@ -204,10 +204,9 @@ class InstitutionViewSet(viewsets.ModelViewSet):
         except Exception:
             pass
 
-        # For backward compatibility the endpoint returns the institution object
-        # as the top-level JSON body (the frontend expects `inst.data` to be the
-        # institution). Keep import stats available under `last_import` in the
-        # institution payload if the frontend wants to read them later.
+        # Pour compatibilité ascendante, l'endpoint retourne l'objet institution
+        # comme racine du JSON (le frontend attend `inst.data` comme institution).
+        # Garder les stats d'import sous `last_import` dans le payload institution si le frontend veut les lire plus tard.
         inst_data = InstitutionSerializer(institution).data
         inst_data['last_import'] = {'created': created, 'updated': updated, 'errors': errors, 'total_rows': total_rows}
         return Response(inst_data, status=status.HTTP_200_OK)
@@ -233,14 +232,14 @@ class InstitutionViewSet(viewsets.ModelViewSet):
 
         is_preview = request.query_params.get('preview') in ('1', 'true', 'True')
 
-        # Read bytes once
+        # Lire les octets une seule fois
         raw = None
         try:
             raw = f.read()
         except Exception:
             return Response({'detail': 'Could not read uploaded file.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Try UTF-8 with BOM then fallback to latin-1
+        # Essayer UTF-8 avec BOM puis basculer sur latin-1
         text = None
         for enc in ('utf-8-sig', 'utf-8', 'latin-1'):
             try:
@@ -266,11 +265,11 @@ class InstitutionViewSet(viewsets.ModelViewSet):
         parsed_rows = []
         for row in reader:
             total_rows += 1
-            # Try common header names for identifier and name. We intentionally ignore
-            # any 'eligible' column and treat imported voters as eligible by default.
+            # Essayer les noms de colonnes courants pour l'identifiant et le nom. On ignore volontairement
+            # toute colonne 'eligible' et on considère tous les électeurs importés comme éligibles par défaut.
             identifier = (row.get('identifier') or row.get('id') or row.get('email') or '').strip()
             name = (row.get('name') or row.get('full_name') or row.get('nom') or '').strip()
-            # Force eligibility to True for all imported voters to simplify import requirements
+            # Forcer l'éligibilité à True pour tous les électeurs importés pour simplifier l'import
             eligible_val = True
 
             if not identifier:
@@ -282,11 +281,11 @@ class InstitutionViewSet(viewsets.ModelViewSet):
 
             parsed_rows.append({'identifier': identifier, 'name': name, 'eligible': eligible_val})
 
-        # Preview mode: return counts only
+        # Mode aperçu : ne retourner que les compteurs
         if is_preview:
             return Response({'total_rows': total_rows, 'eligible': eligible_ok, 'invalid': invalid}, status=status.HTTP_200_OK)
 
-        # Persist file record
+        # Enregistrer le fichier importé
         try:
             from django.core.files.base import ContentFile
             imp = VoterImportFile.objects.create(
@@ -298,7 +297,7 @@ class InstitutionViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'detail': f'Error saving import file: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Create/update voters
+        # Créer ou mettre à jour les électeurs
         try:
             with transaction.atomic():
                 for r in parsed_rows:
@@ -369,15 +368,19 @@ class InstitutionViewSet(viewsets.ModelViewSet):
 
             out = StringIO()
             writer = pycsv.writer(out)
+            # Écrire l'en-tête du CSV de sauvegarde
             writer.writerow(['voter_identifier', 'voter_name', 'eligible', 'created_at', 'votes'])
 
             import json
+            # Pour chaque électeur, ajouter ses votes au CSV
             for v in voters:
                 votes = list(Vote.objects.filter(voter=v).values('id', 'ballot_id', 'candidate_id', 'timestamp'))
                 writer.writerow([v.identifier, v.name, v.eligible, v.created_at.isoformat(), json.dumps(votes, default=str)])
 
+            # Récupérer le contenu du CSV de sauvegarde
             backup_csv = out.getvalue()
 
+            # Suppression des votes et électeurs liés à l'import, puis du fichier
             with transaction.atomic():
                 Vote.objects.filter(voter__in=voters).delete()
                 voters.delete()
@@ -385,6 +388,7 @@ class InstitutionViewSet(viewsets.ModelViewSet):
                 imp.delete()
                 AuditLog.objects.create(action='import_file_force_deleted', actor=request.user.username, detail={'file_id': file_id, 'institution_id': institution.id})
 
+            # Sauvegarde sur S3 si configuré
             s3_url = None
             if getattr(settings, 'AWS_S3_BUCKET_NAME', None):
                 try:
@@ -436,18 +440,18 @@ class ElectionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        # If authenticated institution user, return their elections.
+        # Si utilisateur institution authentifié, retourner ses élections.
         if self.request.user and getattr(self.request.user, 'is_authenticated', False):
             try:
                 institution = get_object_or_404(Institution, user=self.request.user)
                 qs = Election.objects.filter(institution=institution)
-                # Ensure any expired elections are marked closed before returning to the UI
+                # S'assurer que les élections expirées sont bien clôturées avant affichage dans l'UI
                 try:
                     for e in qs:
                         try:
                             auto_close_election(e)
                         except Exception:
-                            # don't let auto-close failures block listing
+                            # Ne pas bloquer l'affichage en cas d'échec de clôture automatique
                             continue
                 except Exception:
                     pass
@@ -455,7 +459,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
             except Exception:
                 return Election.objects.none()
 
-        # Allow anonymous listing by passing ?institution=<id>
+        # Autoriser l'affichage anonyme en passant ?institution=<id>
         institution_id = self.request.query_params.get('institution') or self.request.query_params.get('institution_id')
         if institution_id:
             return Election.objects.filter(institution__id=institution_id)
@@ -464,8 +468,8 @@ class ElectionViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         institution = get_object_or_404(Institution, user=self.request.user)
-        # Verification requirement removed: allow institutions to create elections immediately.
-        # Normalize start/end datetimes if provided (from HTML datetime-local or ISO strings)
+        # Suppression de la vérification : permettre aux institutions de créer des élections immédiatement.
+        # Normaliser les dates de début/fin si fournies (depuis HTML datetime-local ou chaînes ISO)
         start_raw = self.request.data.get('start')
         end_raw = self.request.data.get('end')
         start_dt = None
@@ -483,24 +487,21 @@ class ElectionViewSet(viewsets.ModelViewSet):
             start_dt = None
             end_dt = None
 
-        # Only set start/end on creation if the client explicitly requests the election
-        # to be opened immediately (via `open_immediately`). This ensures newly created
-        # elections remain closed by default even if the client supplied start/end datetimes.
-        # To be defensive we also remove any provided `start`/`end` from validated_data
-        # when `open_immediately` is not true so that the serializer does not persist
-        # those fields unintentionally.
+        # Ne définir start/end à la création que si le client demande explicitement l'ouverture immédiate (via `open_immediately`).
+        # Cela garantit que les élections nouvellement créées restent fermées par défaut même si le client a fourni des dates.
+        # Par précaution, on retire aussi tout champ `start`/`end` de validated_data si `open_immediately` n'est pas vrai pour éviter leur persistance involontaire.
         import logging
         logger = logging.getLogger(__name__)
 
         save_kwargs = {'institution': institution}
         open_immediately = bool(self.request.data.get('open_immediately'))
 
-        # Log incoming request values for debugging (temporary; will be removed later)
+        # Journaliser les valeurs de la requête entrante pour le debug (temporaire)
         logger.info("perform_create: open_immediately=%s, start_raw=%s, end_raw=%s", open_immediately, start_raw, end_raw)
         logger.info("perform_create: serializer.initial_data keys=%s", list(getattr(serializer, 'initial_data', {}).keys()))
         logger.info("perform_create: serializer.validated_data before cleanup=%s", {k: v for k, v in serializer.validated_data.items() if k in ('start','end')})
 
-        # If the client requested immediate open and provided both datetimes, set them explicitly
+        # Si le client demande l'ouverture immédiate et fournit les deux dates, les définir explicitement
         if open_immediately and start_dt is not None and end_dt is not None:
             # validate ordering
             if start_dt >= end_dt:
@@ -508,7 +509,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
             save_kwargs['start'] = start_dt
             save_kwargs['end'] = end_dt
         else:
-            # Ensure serializer won't persist start/end fields accidentally
+            # S'assurer que le serializer ne persiste pas accidentellement les champs start/end
             try:
                 # validated_data is a dict-like ReturnDict; pop if present
                 serializer.validated_data.pop('start', None)
@@ -516,7 +517,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
             except Exception:
                 pass
 
-        # Save and log the created election state for debugging
+        # Sauvegarder et journaliser l'état de l'élection créée pour le debug
         serializer.save(**save_kwargs)
         try:
             created = serializer.instance
@@ -532,10 +533,10 @@ class ElectionViewSet(viewsets.ModelViewSet):
             actor=self.request.user.username,
             detail={'election_title': serializer.instance.title}
         )
-        # Note: automatic ballot creation removed — institutions should create ballots explicitly.
+        # Remarque : la création automatique de bulletins est supprimée — les institutions doivent créer les bulletins explicitement.
 
     def get_object(self):
-        # Ensure fetched election is auto-closed if its end time has been reached.
+        # S'assurer que l'élection récupérée est clôturée automatiquement si sa date de fin est atteinte.
         obj = super().get_object()
         try:
             auto_close_election(obj)
@@ -557,16 +558,16 @@ class ElectionViewSet(viewsets.ModelViewSet):
         election = self.get_object()
         if election.scrutin_type != 'majoritaire_2tours':
             return Response({'detail': 'Election not configured for two-round majoritarian.'}, status=status.HTTP_400_BAD_REQUEST)
-        # Optional: accept start/end/title and open_immediately to create a second-round ballot
+        # Optionnel : accepter start/end/title et open_immediately pour créer un bulletin du second tour
         start_raw = request.data.get('start')
         end_raw = request.data.get('end')
         title = request.data.get('title') or f"Second tour - {election.title}"
         open_immediately = bool(request.data.get('open_immediately'))
-        # New optional behaviour: create a new Election for round 2 with only qualified candidates
+        # Nouveau comportement optionnel : créer une nouvelle Election pour le second tour avec seulement les candidats qualifiés
         create_new = bool(request.data.get('create_new_election'))
         qualified_ids = request.data.get('qualified_candidate_ids') or None
 
-        # parse datetimes
+        # Parser les dates
         start_dt = None
         end_dt = None
         try:
@@ -582,8 +583,8 @@ class ElectionViewSet(viewsets.ModelViewSet):
             start_dt = None
             end_dt = None
 
-        # For two-round elections we no longer create separate Ballot objects.
-        # Optional: create a new Election record for the second round containing only the qualified candidates
+        # Pour les élections à deux tours, on ne crée plus d'objet Ballot séparé.
+        # Optionnel : créer un nouvel objet Election pour le second tour avec uniquement les candidats qualifiés
         if create_new:
             try:
                 import logging
@@ -600,15 +601,15 @@ class ElectionViewSet(viewsets.ModelViewSet):
                     end=end_dt,
                     current_round=2,
                 )
-                # copy qualified candidates
+                # Copier les candidats qualifiés
                 if qualified_ids:
-                    # copy candidates by id; duplicate photo files to avoid shared references
+                    # Copier les candidats par id ; dupliquer les fichiers photo pour éviter les références partagées
                     from django.core.files.base import ContentFile
                     from django.core.files.storage import default_storage
                     import os
                     import uuid
 
-                    # defensively coerce incoming ids to ints
+                    # Convertir les ids reçus en int de façon défensive
                     try:
                         if isinstance(qualified_ids, (list, tuple)):
                             qids = [int(x) for x in qualified_ids]
@@ -626,7 +627,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
                                 bio=c.bio,
                                 position=c.position,
                             )
-                            # duplicate photo file if present
+                            # Dupliquer le fichier photo si présent
                             if getattr(c, 'photo', None) and getattr(c.photo, 'name', None):
                                 try:
                                     src_name = c.photo.name
@@ -637,7 +638,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
                                     new_c.photo.save(new_name, ContentFile(data))
                                 except Exception as e:
                                     logger.exception('Failed to copy candidate photo %s: %s', getattr(c.photo, 'name', None), str(e))
-                                    # if copying fails, skip photo but keep candidate
+                                    # si la copie échoue, ignorer la photo mais garder le candidat
                                     pass
                         except Candidate.DoesNotExist:
                             logger.warning('Qualified candidate id %s not found for election %s', cid, election.id)
@@ -646,7 +647,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
                             logger.exception('Error copying candidate id %s: %s', cid, str(e))
                             continue
                 else:
-                    # If no qualified ids provided, default to top 2 by votes
+                    # Si aucun id qualifié n'est fourni, prendre par défaut les 2 premiers par nombre de voix
                     total_votes = Vote.objects.filter(election=election).count()
                     counts = []
                     for cand in election.candidates.all():
@@ -735,10 +736,10 @@ class ElectionViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def results(self, request, pk=None):
-        """Aggregate results for the whole election (across ballots)."""
+        """Agrège les résultats pour toute l'élection (tous bulletins confondus)."""
         election = self.get_object()
         candidates = election.candidates.all()
-        # total votes across all ballots for this election
+        # total des votes sur tous les bulletins pour cette élection
         total_votes = Vote.objects.filter(election=election).count()
         counts = []
         for candidate in candidates:
@@ -746,7 +747,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
             percent = round((vcount / total_votes) * 100, 2) if total_votes > 0 else 0.0
             counts.append({'candidate_id': candidate.id, 'candidate_name': candidate.name, 'votes': vcount, 'percent': percent})
 
-        # add 'Vote nul' placeholder
+        # ajouter le placeholder 'Vote nul'
         nul_count = Vote.objects.filter(election=election, candidate__isnull=True).count()
         counts.append({'candidate_id': None, 'candidate_name': 'Vote nul', 'votes': nul_count, 'percent': round((nul_count / total_votes) * 100, 2) if total_votes > 0 else 0.0})
 
@@ -758,7 +759,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
             'candidates': counts,
         }
 
-        # Single-round winner check
+        # Vérification du gagnant pour un scrutin à un tour
         if election.scrutin_type == 'majoritaire_1tour':
             sorted_c = sorted([c for c in counts if c['candidate_id'] is not None], key=lambda x: x['votes'], reverse=True)
             if sorted_c:
@@ -768,20 +769,18 @@ class ElectionViewSet(viewsets.ModelViewSet):
                 response['status'] = 'no_votes'
             return Response(response, status=status.HTTP_200_OK)
 
-        # Two-round logic (aggregate)
+        # Logique pour scrutin majoritaire à deux tours (agrégé)
         if election.scrutin_type == 'majoritaire_2tours':
             majority = float(election.majority_threshold or 50)
-            advance = float(election.advance_threshold or 12.5)
             winners = [c for c in counts if c['candidate_id'] is not None and c['percent'] >= majority]
             if winners:
                 response['status'] = 'first_round_elected'
                 response['winner'] = winners[0]
                 return Response(response, status=status.HTTP_200_OK)
 
-            qualifiers = [c for c in counts if c['candidate_id'] is not None and c['percent'] >= advance]
-            if len(qualifiers) < 2:
-                sorted_by_votes = sorted([c for c in counts if c['candidate_id'] is not None], key=lambda x: x['votes'], reverse=True)
-                qualifiers = sorted_by_votes[:2]
+            # Nouvelle logique : seuls les deux premiers candidats passent au second tour
+            sorted_by_votes = sorted([c for c in counts if c['candidate_id'] is not None], key=lambda x: x['votes'], reverse=True)
+            qualifiers = sorted_by_votes[:2]
 
             response['status'] = 'second_round_required'
             response['qualified_candidates'] = qualifiers
@@ -792,14 +791,14 @@ class ElectionViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'], url_path='timeline')
     def timeline(self, request, pk=None):
-        """Return a time-series aggregation of votes for the election.
+        """Retourne une agrégation temporelle des votes pour l'élection.
 
-        Query params:
-        - unit: 'minute' (default) or 'hour'
-        - start: ISO datetime (optional)
-        - end: ISO datetime (optional)
+        Paramètres de requête :
+        - unit : 'minute' (par défaut) ou 'hour'
+        - start : datetime ISO (optionnel)
+        - end : datetime ISO (optionnel)
 
-        Response: { timeline: [{ timestamp: ISO, total: int, by_candidate: [{candidate_id, votes}, ...] }, ...] }
+        Réponse : { timeline: [{ timestamp: ISO, total: int, by_candidate: [{candidate_id, votes}, ...] }, ...] }
         """
         election = self.get_object()
         unit = (request.query_params.get('unit') or 'minute').lower()

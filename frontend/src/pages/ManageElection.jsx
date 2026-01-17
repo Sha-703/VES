@@ -60,7 +60,7 @@ export default function ManageElection() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Chargement initial + sondage toutes les 5 secondes pour actualiser les données
+  // Chargement initial + actualisation toutes les 5 secondes pour mettre à jour les données
   const loadData = useCallback(async () => {
     try {
       const res = await getElection(electionId);

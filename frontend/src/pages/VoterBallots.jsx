@@ -1,5 +1,5 @@
-// Compatibility wrapper: re-export the new VoterElections component
-// Keep this file so older imports continue to work until we remove them project-wide.
+// Wrapper de compatibilité : réexporte le nouveau composant VoterElections
+// On garde ce fichier pour que les anciens imports continuent de fonctionner jusqu'à leur suppression dans tout le projet.
 import VoterElections from './VoterElections';
 
 export default VoterElections;

@@ -16,8 +16,8 @@ export default function CreateElection() {
     setError('');
     setSuccess('');
     try {
-      // Préparer start/end : les valeurs datetime-local sont en heure locale sans timezone.
-      // Convertir en chaînes ISO (avec timezone) si fourni, sinon envoyer null.
+      // Préparer start/end : les valeurs datetime-local sont en heure locale sans fuseau horaire.
+      // Convertir en chaînes ISO (avec fuseau horaire) si fourni, sinon envoyer null.
       const startIso = form.start ? new Date(form.start).toISOString() : null;
       const endIso = form.end ? new Date(form.end).toISOString() : null;
 

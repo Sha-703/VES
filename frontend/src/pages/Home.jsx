@@ -16,7 +16,7 @@ export default function Home() {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* semi-transparent dark overlay + blur */}
+        {/* superposition sombre semi-transparente + flou */}
         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.28)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }} />
 
         <div style={{ position: 'relative', zIndex: 1 }}>

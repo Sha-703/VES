@@ -31,7 +31,7 @@ export default function ImportHistory() {
       const resp = await getImportFiles(inst.data.id);
       setImports(resp.data.imports || []);
     } catch (err) {
-      // afficher une erreur plus détaillée pour aider au débogage
+      // Affiche une erreur plus détaillée pour faciliter le débogage
       const status = err.response?.status;
       const data = err.response?.data;
       const msg = data?.detail || data || err.message || 'Erreur lors du chargement des imports.';
@@ -43,15 +43,16 @@ export default function ImportHistory() {
   };
 
   const handleDelete = async (fileId) => {
+    // Demande de confirmation avant suppression définitive
     if (!window.confirm('Supprimer ce fichier importé ? Cette action est irréversible.')) return;
     try {
       await deleteImportFile(institution.id, fileId);
-      // actualiser
+      // Actualiser la liste après suppression
       loadData();
     } catch (err) {
       const data = err.response?.data;
       if (data?.blocked_count) {
-        // afficher la modale de forçage proposant la suppression forcée
+        // Afficher la modale de forçage proposant la suppression forcée
         setBlockedInfo(data);
         setForceTarget(fileId);
         setForceModalOpen(true);
@@ -68,7 +69,7 @@ export default function ImportHistory() {
     try {
       const resp = await forceDeleteImportFile(institution.id, forceTarget);
       const backup = resp.data.backup;
-      // déclencher le téléchargement du CSV de sauvegarde
+      // Déclencher le téléchargement du CSV de sauvegarde
       const blob = new Blob([backup], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -82,7 +83,7 @@ export default function ImportHistory() {
       setForceModalOpen(false);
       setForceTarget(null);
       setBlockedInfo(null);
-      // refresh
+      // Actualiser la liste après suppression forcée
       loadData();
     } catch (err) {
       setError(err.response?.data?.detail || 'Erreur lors de la suppression forcée.');

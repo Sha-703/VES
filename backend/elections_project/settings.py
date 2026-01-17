@@ -3,18 +3,18 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
-# DEBUG can be set via env var (e.g. 'True'/'False') for deployments
+# DEBUG peut être défini via une variable d'environnement (par exemple 'True'/'False') pour les déploiements
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes')
-# Allow configuring allowed hosts via env var (comma-separated). Defaults to '*'.
+# Permet de configurer les hôtes autorisés via une variable d'environnement (séparés par des virgules). Par défaut '*'.
 _allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*')
 ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(',') if h.strip()]
 
-# During local development, print emails to the console so verification links are visible
-# Email configuration
-# Priority order:
-# 1. If explicit EMAIL_BACKEND env var is provided, use it.
-# 2. If DEBUG=True, use console backend for local development.
-# 3. Otherwise use SMTP backend and read SMTP settings from env vars.
+# Pendant le développement local, les emails sont affichés dans la console pour rendre les liens de vérification visibles
+# Configuration des emails
+# Ordre de priorité :
+# 1. Si la variable d'environnement EMAIL_BACKEND est définie, l'utiliser.
+# 2. Si DEBUG=True, utiliser le backend console pour le développement local.
+# 3. Sinon, utiliser le backend SMTP et lire les paramètres SMTP depuis les variables d'environnement.
 if os.environ.get('EMAIL_BACKEND'):
     EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND')
 elif DEBUG:
@@ -22,18 +22,18 @@ elif DEBUG:
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-# Common/defaults for FROM address
+# Adresse d'expédition par défaut
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@ves')
 
-# SMTP settings (used when EMAIL_BACKEND is SMTP)
+# Paramètres SMTP (utilisés lorsque EMAIL_BACKEND est SMTP)
 EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587)) if os.environ.get('EMAIL_PORT') else 587
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() in ('1','true','yes')
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
-# Twilio configuration (set these as environment variables in production)
-# Do NOT commit secrets into the repository. Use your shell or a secrets manager.
+# Configuration Twilio (à définir comme variables d'environnement en production)
+# Ne jamais enregistrer de secrets dans le dépôt. Utilisez votre shell ou un gestionnaire de secrets.
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
 TWILIO_FROM_NUMBER = os.environ.get('TWILIO_FROM_NUMBER', '')

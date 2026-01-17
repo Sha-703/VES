@@ -7,9 +7,9 @@ class VoteAdmin(admin.ModelAdmin):
     list_display = ('election', 'candidate', 'voter', 'timestamp')
 
 
-# Register Vote only if not already registered by another module
+ # Enregistrer Vote uniquement si non déjà enregistré par un autre module
 try:
     admin.site.register(Vote, VoteAdmin)
 except AlreadyRegistered:
-    # already registered elsewhere (safe to ignore)
+    # déjà enregistré ailleurs (on peut ignorer)
     pass

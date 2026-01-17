@@ -44,7 +44,7 @@ class CandidateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Candidate
-        # expose the photo field so uploads can be set via API
+        # exposer le champ photo pour permettre l'upload via l'API
         fields = ('id', 'name', 'bio', 'position', 'photo', 'vote_count', 'election', 'created_at')
         read_only_fields = ('created_at',)
 
@@ -72,7 +72,7 @@ class ElectionSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at',)
 
     def validate(self, data):
-        """Ensure start < end when both provided."""
+        """Vérifie que la date de début est antérieure à la date de fin si les deux sont fournies."""
         start = data.get('start')
         end = data.get('end')
         if start and end and start >= end:
@@ -81,7 +81,7 @@ class ElectionSerializer(serializers.ModelSerializer):
 
     def get_voted_voters_count(self, obj):
         try:
-            # count distinct voters who have at least one vote for this election
+            # compter les électeurs distincts ayant au moins un vote pour cette élection
             return Vote.objects.filter(election=obj).values('voter').distinct().count()
         except Exception:
             return 0
@@ -89,10 +89,10 @@ class ElectionSerializer(serializers.ModelSerializer):
     def get_is_open(self, obj):
         try:
             now = timezone.now()
-            # Consider election open when:
-            # - both start and end are set and now is within the window, OR
-            # - start is set and end is not set and now is after start (open until explicitly closed)
-            # Note: treat `end` as exclusive so setting end == now marks the election closed.
+            # Considérer l'élection comme ouverte lorsque :
+            # - start et end sont définis et maintenant est dans la fenêtre
+            # - start est défini et end non, et maintenant est après start (ouverte jusqu'à fermeture explicite)
+            # Remarque : traiter `end` comme exclusif, donc end == maintenant ferme l'élection
             if obj.start and obj.end:
                 return obj.start <= now < obj.end
             if obj.start and not obj.end:
@@ -121,7 +121,7 @@ class VoterImportFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = None
-        # will be set dynamically below
+        # sera défini dynamiquement ci-dessous
         fields = ('id', 'file_url', 'uploaded_by', 'uploaded_at', 'total_rows', 'created', 'updated')
 
     def get_file_url(self, obj):

@@ -9,7 +9,7 @@ export default function InstitutionLogin() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // No verification gate: users can attempt login immediately after registration.
+  // Pas de vérification : les utilisateurs peuvent se connecter immédiatement après l'inscription.
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -17,7 +17,7 @@ export default function InstitutionLogin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Verification requirement removed: allow login attempt immediately
+    // Vérification supprimée : connexion autorisée immédiatement
     setLoading(true);
     setError('');
     try {
@@ -35,7 +35,7 @@ export default function InstitutionLogin() {
   return (
     <FormContainer title="Connexion Institution" onSubmit={handleSubmit} submitText="Se connecter" loading={loading}>
       {error && <Alert type="error">{error}</Alert>}
-      {/* Verification removed */}
+      {/* Vérification supprimée */}
       <FormField
         label="Nom de l'institution"
         name="institution_name"

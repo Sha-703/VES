@@ -22,18 +22,19 @@ export default function VoterElections() {
 
   const loadBallots = async (institutionId = null) => {
     try {
-      // Endpoints 'ballot' supprimés ; lister les élections de l'institution et afficher celles ouvertes
+      // Endpoints 'ballot' supprimés ; on liste les élections de l'institution et on affiche celles qui sont ouvertes
       const erez = await getElections(institutionId);
       const now = new Date();
       const openElections = (erez.data || []).filter(e => {
-        // Prefer backend-provided `is_open` when available
+
+        // Préférer le champ `is_open` fourni par le backend quand il est disponible
         if (typeof e.is_open !== 'undefined') return !!e.is_open;
 
-        // Fallback: apply same rules as server-side ElectionSerializer.get_is_open
+        // Sinon : appliquer les mêmes règles que ElectionSerializer.get_is_open côté serveur
         if (e.start && e.end) {
           const s = new Date(e.start);
           const en = new Date(e.end);
-          // end is exclusive
+          // la date de fin est exclusive
           return s <= now && now < en;
         }
         if (e.start && !e.end) {

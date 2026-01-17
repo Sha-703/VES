@@ -133,7 +133,7 @@ export default function InstitutionDashboard() {
     loadData();
   }, []);
 
-  // Poll periodically to refresh elections so expired elections are shown as closed promptly.
+  // Actualisation périodique pour que les élections expirées apparaissent rapidement comme fermées.
   useEffect(() => {
     const interval = setInterval(() => {
       try {
@@ -153,8 +153,8 @@ export default function InstitutionDashboard() {
       setElections(elecs.data);
       try {
         const vs = await getVoterSummary();
-        // Si eligible_voters est 0 mais que le dernier import signale des lignes, préférer cette valeur
-        // afin que le tableau de bord reflète immédiatement les données uploadées.
+        // Si eligible_voters est 0 mais que le dernier import signale des lignes, on préfère cette valeur
+        // pour que le tableau de bord reflète immédiatement les données importées.
         const summary = vs.data || {};
         if ((summary.eligible_voters === 0 || summary.eligible_voters === undefined) && summary.last_import && summary.last_import.detail && (summary.last_import.detail.total_rows || summary.last_import.detail.total_rows === 0)) {
           summary.eligible_voters = summary.last_import.detail.total_rows;
@@ -179,11 +179,11 @@ export default function InstitutionDashboard() {
     const file = e.target.files?.[0] || null;
     setSelectedFile(file);
     if (file) {
-      // appeler l'endpoint de preview pour obtenir les comptes
+      // Appeler l'endpoint de prévisualisation pour obtenir les comptes
       importVotersPreview(institution.id, file).then((resp) => {
         setPreviewResult(resp.data);
       }).catch((err) => {
-        // ne pas bloquer la sélection en cas d'erreurs de preview
+        // Ne pas bloquer la sélection en cas d'erreur de prévisualisation
         setPreviewResult(null);
         setError(err.response?.data?.detail || 'Impossible d\'analyser le fichier pour prévisualisation.');
       });
@@ -201,12 +201,12 @@ export default function InstitutionDashboard() {
     try {
       const resp = await importVoters(institution.id, selectedFile);
       setImportResult(resp.data);
-      // recharger les données pour refléter les nouveaux votants créés : actualiser le résumé et les données complètes
+      // Recharger les données pour refléter les nouveaux votants créés : actualiser le résumé et les données complètes
       try {
         const vs = await getVoterSummary();
         setVoterSummary(vs.data);
       } catch (e) {
-        // repli sur rechargement complet
+        // Repli sur rechargement complet
         loadData();
       }
     } catch (err) {
@@ -214,7 +214,7 @@ export default function InstitutionDashboard() {
     } finally {
       setImportLoading(false);
       setSelectedFile(null);
-      // reset file input value by clearing the element (handled in JSX via key)
+      // Réinitialiser la valeur du champ fichier en effaçant l'élément (géré dans le JSX via la clé)
     }
   };
 
@@ -242,7 +242,7 @@ export default function InstitutionDashboard() {
     return <div>Chargement...</div>;
   }
 
-  // derived metrics
+  // Métriques dérivées
   const totalBallots = elections.reduce((s, e) => s + (e.ballots?.length || 0), 0);
   const totalCandidates = elections.reduce((s, e) => s + (e.candidates?.length || 0), 0);
 
@@ -291,7 +291,7 @@ export default function InstitutionDashboard() {
         </div>
       </div>
 
-      {/* Elections section (full width) */}
+      {/* Section élections (pleine largeur) */}
       <div style={{ width: '100%', padding: '0 12px', boxSizing: 'border-box', marginTop: 8 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }} className="fade-in stagger-3">
           <h2 style={{ margin: 0 }}>Vos élections</h2>
@@ -351,10 +351,10 @@ export default function InstitutionDashboard() {
         </div>
       </div>
 
-      {/* Import card (below elections) */}
+      {/* Carte d'import (sous les élections) */}
       <div style={{ width: '100%', padding: '12px', boxSizing: 'border-box', marginTop: 18 }}>
         <div className="card small-card slide-up stagger-2" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          {/* Left: title + histórico */}
+          {/* Gauche : titre + historique */}
           <div style={{ flex: '1 1 240px', minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
               <div style={{ minWidth: 0 }}>
@@ -367,7 +367,7 @@ export default function InstitutionDashboard() {
             </div>
           </div>
 
-          {/* Middle: file input (expands) */}
+          {/* Milieu : champ fichier (expansible) */}
           <div style={{ flex: '1 1 360px', minWidth: 160 }}>
             <input style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #ddd' }} key={selectedFile ? selectedFile.name : 'file-input'} type="file" accept=".csv, .xlsx, .xls" onChange={handleFileChange} />
             {selectedFile && (
@@ -377,13 +377,13 @@ export default function InstitutionDashboard() {
             )}
           </div>
 
-          {/* Right: action buttons */}
+          {/* Droite : boutons d'action */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'flex-end', flex: '0 0 auto' }}>
             <button type="button" className="btn-primary" onClick={(e) => { e.preventDefault(); handleImportSubmit(e); }} disabled={importLoading || !selectedFile} style={{ padding: '8px 12px', fontSize: 14 }}>{importLoading ? 'Import…' : 'Importer'}</button>
             <button type="button" className="btn-secondary" onClick={() => setSelectedFile(null)} style={{ padding: '8px 12px', fontSize: 14 }} disabled={!selectedFile}>Annuler</button>
           </div>
 
-          {/* Full-width: feedback / preview */}
+          {/* Pleine largeur : feedback / prévisualisation */}
           <div style={{ flexBasis: '100%', marginTop: 10 }}>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               {importLoading && <div style={{ fontSize: 13, color: '#374151' }}>Traitement du fichier…</div>}

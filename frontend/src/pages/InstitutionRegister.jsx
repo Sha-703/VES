@@ -11,7 +11,7 @@ export default function InstitutionRegister() {
     institution_description: '',
   });
   const [error, setError] = useState('');
-  // successMessage removed: we don't show a success banner after register
+  // successMessage supprimé : aucune bannière de succès affichée après l'inscription
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -24,7 +24,7 @@ export default function InstitutionRegister() {
     setLoading(true);
     setError('');
     try {
-      // Générer un nom d'utilisateur sûr côté client à partir du nom ou de l'email de l'institution
+      // Génère un nom d'utilisateur sûr côté client à partir du nom ou de l'email de l'institution
       const raw = (form.institution_name || form.email || 'institution').toString();
       const username = raw
         .toLowerCase()

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from elections_app.models import Institution, Election, Candidate, Voter
 
-# Import-export for admin import/export
+ # Import-export pour l'import/export dans l'admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
@@ -10,7 +10,7 @@ from import_export.admin import ImportExportModelAdmin
 class VoterResource(resources.ModelResource):
     class Meta:
         model = Voter
-        # expect institution to be provided as a PK (institution id) in the import file
+        # institution doit être fournie comme PK (id institution) dans le fichier d'import
         fields = ('institution', 'identifier', 'name', 'eligible')
         import_id_fields = ('institution', 'identifier')
 

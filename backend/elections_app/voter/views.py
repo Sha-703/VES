@@ -14,7 +14,7 @@ from elections_app.voter.serializers import VoterLoginSerializer, VoteSerializer
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def voter_login(request):
-    """Login a voter via identifier + name."""
+    """Connexion d'un électeur via identifiant + nom."""
     serializer = VoterLoginSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -25,8 +25,8 @@ def voter_login(request):
     if not institution_id:
         return Response({'detail': 'Missing institution_id.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Authenticate voters by institution + identifier only. This allows
-    # removing the frontend 'name' field while preserving unique lookup.
+    # Authentifier les électeurs uniquement par institution + identifiant. Cela permet
+    # de supprimer le champ 'nom' côté frontend tout en gardant la recherche unique.
     voter = get_object_or_404(Voter, institution_id=institution_id, identifier=identifier)
 
     if not voter.eligible:
@@ -43,38 +43,38 @@ class VoteViewSet(viewsets.ViewSet):
         candidate_id = request.data.get('candidate_id')
         voter_id = request.data.get('voter_id')
 
-        # Require voter_id and election_id (ballots removed)
+        # Requiert voter_id et election_id (bulletins supprimés)
         election_id = request.data.get('election_id')
         if not voter_id or not election_id:
             return Response({'detail': 'Missing required fields: voter_id and election_id are required (ballots removed).'}, status=status.HTTP_400_BAD_REQUEST)
 
         election = get_object_or_404(Election, id=election_id)
 
-        # If the election's end time has already been reached, ensure it's auto-closed
+        # Si la date de fin de l'élection est atteinte, s'assurer qu'elle est clôturée automatiquement
         if auto_close_election(election):
             return Response({'detail': 'Voting window closed or not started.'}, status=status.HTTP_400_BAD_REQUEST)
 
         voter = get_object_or_404(Voter, id=voter_id)
 
-        # Determine candidate: support a 'null' vote sent by the frontend
-        # A null vote is NOT a candidate — record Vote.candidate = None.
+        # Déterminer le candidat : supporter un vote 'nul' envoyé par le frontend
+        # Un vote nul n'est PAS un candidat — enregistrer Vote.candidate = None.
         candidate = None
         if candidate_id is None or str(candidate_id).strip().lower() in ['', 'null', 'none']:
             candidate = None
         else:
-            # Candidate model is linked to Election, ensure candidate belongs to this election.
+            # Le modèle Candidate est lié à Election, s'assurer que le candidat appartient bien à cette élection.
             candidate = get_object_or_404(Candidate, id=candidate_id, election=election)
 
         now = timezone.now()
 
-        # Use the parent Election window (start/end) to determine whether voting is allowed for this election.
-        # Harmonized logic: use same rules as ElectionSerializer.get_is_open
-        # - If start and end present: open when start <= now < end (end exclusive)
-        # - If start present and no end: open when start <= now
-        # - Otherwise (including end-only): treat as closed
+        # Utiliser la fenêtre de l'Election parente (start/end) pour déterminer si le vote est autorisé pour cette élection.
+        # Logique harmonisée : utiliser les mêmes règles que ElectionSerializer.get_is_open
+        # - Si start et end présents : ouvert si start <= maintenant < end (end exclus)
+        # - Si start présent et pas end : ouvert si start <= maintenant
+        # - Sinon (y compris end seul) : considérer comme fermé
         start = election.start
         end = election.end
-        # Normalize naive datetimes to aware using current timezone
+        # Normaliser les datetimes naïves en aware avec le fuseau horaire courant
         try:
             if start and timezone.is_naive(start):
                 start = timezone.make_aware(start, timezone.get_current_timezone())
@@ -93,10 +93,10 @@ class VoteViewSet(viewsets.ViewSet):
             if not (start <= now):
                 return Response({'detail': 'Voting window closed or not started.'}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            # end-only or no window -> closed
+            # end seul ou aucune fenêtre -> fermé
             return Response({'detail': 'Voting window closed or not started.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Prevent double voting per election
+        # Empêcher le double vote par élection
         if Vote.objects.filter(election=election, voter=voter).exists():
             return Response({'detail': 'Voter already voted in this election.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -111,10 +111,10 @@ class VoteViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'])
     def has_voted(self, request):
-        """Check whether a voter has already voted in a given election.
+        """Vérifie si un électeur a déjà voté dans une élection donnée.
 
-        Expects query params: `voter_id` and `election_id`.
-        Returns JSON: { voted: true/false }
+        Attend les paramètres de requête : `voter_id` et `election_id`.
+        Retourne JSON : { voted: true/false }
         """
         voter_id = request.query_params.get('voter_id')
         election_id = request.query_params.get('election_id')

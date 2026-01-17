@@ -10,7 +10,7 @@ export default function ManageCandidates() {
   const [error, setError] = useState('');
   const [activeBallotId, setActiveBallotId] = useState(null);
   const [editingCandidate, setEditingCandidate] = useState(null);
-  const [filters, setFilters] = useState({}); // { electionId: { search: '', page: 1 } }
+  const [filters, setFilters] = useState({}); // { electionId: { recherche: '', page: 1 } }
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [candidateToDelete, setCandidateToDelete] = useState(null);
   const PAGE_SIZE = 5;
@@ -51,7 +51,7 @@ export default function ManageCandidates() {
   };
 
   const handleDelete = async (candidate) => {
-    // open confirmation modal
+    // ouvrir la fenêtre de confirmation
     setCandidateToDelete(candidate);
     setConfirmOpen(true);
   };

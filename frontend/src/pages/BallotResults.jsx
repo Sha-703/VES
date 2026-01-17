@@ -18,14 +18,14 @@ export default function BallotResults() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Si un ballotId (héritage) est fourni, le traiter comme un id d'élection.
+    // Si un ballotId (hérité) est fourni, le traiter comme un id d'élection.
     loadResults();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ballotId, electionId]);
 
   const loadResults = async () => {
     setError('');
-    // Supporter à la fois le paramètre legacy ballotId et le nouveau electionId
+    // Prendre en charge à la fois le paramètre ballotId hérité et le nouveau electionId
     const targetId = ballotId || electionId;
     if (!targetId) {
       setError('Aucun scrutin sélectionné pour afficher les résultats.');

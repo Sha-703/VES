@@ -47,7 +47,6 @@ humanize==4.12.3
 hyperlink==21.0.0
 idna==3.10
 incremental==24.7.2
-jiter==0.10.0
 kiwisolver==1.4.9
 lxml==6.0.0
 matplotlib==3.10.5

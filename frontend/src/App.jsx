@@ -27,13 +27,13 @@ function App() {
         </header>
         <main className="app-main" style={{ padding: 24 }}>
           <Routes>
-        {/* Home */}
+        {/* Accueil */}
         <Route path="/" element={<Home />} />
 
-        {/* Institution Routes */}
+        {/* Routes Institution */}
         <Route path="/institution/register" element={<InstitutionRegister />} />
         <Route path="/institution/login" element={<InstitutionLogin />} />
-        {/* Verification page removed: users can log in immediately after registration */}
+        {/* Page de vérification supprimée : les utilisateurs peuvent se connecter immédiatement après l'inscription */}
         <Route path="/institution/dashboard" element={<InstitutionDashboard />} />
         <Route path="/institution/imports" element={<ImportHistory />} />
         <Route path="/institution/settings" element={<InstitutionSettings />} />

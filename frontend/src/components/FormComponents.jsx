@@ -130,17 +130,17 @@ export function CandidateForm({ initial = {}, onSubmit, onCancel, submitText = '
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        // Support async onSubmit handlers: wait for completion then reset form
+        // Prend en charge les handlers asynchrones : attend la complétion puis réinitialise le formulaire
         const r = onSubmit(form);
         if (r && typeof r.then === 'function') {
           r.then(() => {
             setForm({ name: '', position: '', bio: '', photo: null });
             setPreview(null);
           }).catch(() => {
-            // swallow, parent displays errors
+            // Ignorer, le parent affiche les erreurs
           });
         } else {
-          // synchronous handler: reset immediately
+          // Handler synchrone : réinitialiser immédiatement
           setForm({ name: '', position: '', bio: '', photo: null });
           setPreview(null);
         }
@@ -169,19 +169,19 @@ export function Modal({ title, children, onClose, open = false, initialFocusRef 
   React.useEffect(() => {
     if (!open) return;
 
-    // disable page scroll while modal is open
+    // Désactiver le scroll de la page pendant que la modale est ouverte
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    // focus management: prefer initialFocusRef, else focus first focusable element
+    // Gestion du focus : préférer initialFocusRef, sinon focus sur le premier élément focusable
     const focusTarget = initialFocusRef?.current || containerRef.current?.querySelector('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])');
     if (focusTarget) focusTarget.focus();
 
     const onKey = (e) => {
       if (e.key === 'Escape') onClose?.();
-      // trap focus
+      // Piège le focus dans la modale
       if (e.key === 'Tab') {
-        const focusable = containerRef.current.querySelectorAll('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])');
+        const focusable = containerRef.current.querySelectorAll('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"]');
         if (!focusable.length) return;
         const first = focusable[0];
         const last = focusable[focusable.length - 1];

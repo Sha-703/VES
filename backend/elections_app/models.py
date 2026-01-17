@@ -4,15 +4,15 @@ from django.contrib.auth.models import User
 
 
 class Institution(models.Model):
-    """Represents an organization (school, company, etc.) that runs elections."""
+    """Représente une organisation (école, entreprise, etc.) qui organise des élections."""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='institution')
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    # Email verification flag — institutions must verify their email before full access
+    # Indicateur de vérification email — l'institution doit vérifier son email avant l'accès complet
     is_verified = models.BooleanField(default=False)
     verification_sent_at = models.DateTimeField(null=True, blank=True)
-    # Optional phone number for SMS verification
+    # Numéro de téléphone optionnel pour vérification SMS
     phone_number = models.CharField(max_length=32, null=True, blank=True)
 
     def __str__(self):
@@ -20,7 +20,7 @@ class Institution(models.Model):
 
 
 class Election(models.Model):
-    """Represents an election type (e.g., "Class President 2025")."""
+    """Représente un type d'élection (ex : "Président de classe 2025")."""
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='elections')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -30,18 +30,18 @@ class Election(models.Model):
         choices=[('majoritaire_1tour', 'Scrutin majoritaire à un tour'), ('majoritaire_2tours', 'Scrutin majoritaire à deux tours')],
         default='majoritaire_1tour'
     )
-    # Thresholds for two-round majoritarian elections (percentages)
+    # Seuils pour scrutin majoritaire à deux tours (pourcentages)
     majority_threshold = models.DecimalField(max_digits=5, decimal_places=2, default=50.00)
     advance_threshold = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
-    # Track which round is currently active (1 or 2)
+    # Indique le tour actuellement actif (1 ou 2)
     current_round = models.IntegerField(default=1)
-    # Finalized winner (set by institution after validation)
+    # Gagnant finalisé (défini par l'institution après validation)
     finalized_winner = models.ForeignKey('Candidate', null=True, blank=True, on_delete=models.SET_NULL, related_name='won_elections')
     created_at = models.DateTimeField(auto_now_add=True)
-    # Optional start/end datetimes for the overall election (not individual ballots)
+    # Dates de début/fin optionnelles pour l'élection globale (pas pour les bulletins individuels)
     start = models.DateTimeField(null=True, blank=True)
     end = models.DateTimeField(null=True, blank=True)
-    # Explicit closed flag to record that the election has been closed (set by scheduler/management command)
+    # Indicateur explicite pour enregistrer que l'élection est clôturée (défini par le planificateur/commande de gestion)
     closed = models.BooleanField(default=False)
 
     def __str__(self):
@@ -54,14 +54,14 @@ class Election(models.Model):
 
 
 class Candidate(models.Model):
-    """Represents a candidate in a ballot."""
-    # Candidates are now linked directly to an Election (not to a Ballot)
+    """Représente un candidat dans une élection."""
+    # Les candidats sont maintenant liés directement à une Election (et non à un Bulletin)
     election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='candidates')
     name = models.CharField(max_length=200)
     bio = models.TextField(blank=True)
-    # optional photo upload for candidate
+    # Photo du candidat (optionnelle)
     photo = models.ImageField(upload_to='candidates/', null=True, blank=True)
-    position = models.CharField(max_length=100, blank=True)  # e.g., "Class President"
+    position = models.CharField(max_length=100, blank=True)  # ex : "Président de classe"
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -69,23 +69,23 @@ class Candidate(models.Model):
 
 
 class Voter(models.Model):
-    """Represents an eligible voter for an institution."""
+    """Représente un électeur éligible pour une institution."""
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='voters')
-    identifier = models.CharField(max_length=200)  # e.g., student id or email
+    identifier = models.CharField(max_length=200)  # ex : identifiant étudiant ou email
     name = models.CharField(max_length=200, blank=True)
     eligible = models.BooleanField(default=True)
     import_file = models.ForeignKey('VoterImportFile', null=True, blank=True, on_delete=models.SET_NULL, related_name='voters')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('institution', 'identifier')
+        unique_together = ('institution', 'identifier')  # Unicité par institution et identifiant
 
     def __str__(self):
         return f"{self.identifier} ({self.institution.name})"
 
 
 class VoterImportFile(models.Model):
-    """Stores uploaded voter import files per institution so institutions can manage their uploads."""
+    """Stocke les fichiers d'import d'électeurs pour chaque institution afin qu'elles puissent gérer leurs imports."""
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='import_files')
     file = models.FileField(upload_to='voter_imports/')
     uploaded_by = models.CharField(max_length=200, blank=True, null=True)
@@ -99,17 +99,17 @@ class VoterImportFile(models.Model):
 
 
 class Vote(models.Model):
-    """Records a vote cast by a voter for a candidate in a ballot."""
-    # Votes are linked to the parent Election. The old `Ballot` model has been removed.
+    """Enregistre un vote effectué par un électeur pour un candidat dans une élection."""
+    # Les votes sont liés à l'Election parente. L'ancien modèle `Ballot` a été supprimé.
     election = models.ForeignKey(Election, null=True, blank=True, on_delete=models.SET_NULL, related_name='votes')
-    # A vote may be cast for no candidate (null / blank vote). Allow NULL and
-    # use SET_NULL so deleting a candidate doesn't delete historical votes.
+    # Un vote peut être exprimé sans candidat (vote nul/blanc). Autoriser NULL et
+    # utiliser SET_NULL pour que la suppression d'un candidat ne supprime pas les votes historiques.
     candidate = models.ForeignKey(Candidate, null=True, blank=True, on_delete=models.SET_NULL, related_name='votes')
     voter = models.ForeignKey(Voter, on_delete=models.CASCADE, related_name='votes')
     timestamp = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        unique_together = ('election', 'voter')  # enforce one vote per voter per election
+        unique_together = ('election', 'voter')  # garantir un seul vote par électeur et par élection
 
     def __str__(self):
         cand = self.candidate.name if self.candidate else 'Vote nul'
@@ -119,7 +119,7 @@ class Vote(models.Model):
 
 
 class AuditLog(models.Model):
-    """Logs all actions for audit trail."""
+    """Journalise toutes les actions pour la traçabilité/audit."""
     action = models.CharField(max_length=200)
     actor = models.CharField(max_length=200, blank=True, null=True)
     detail = models.JSONField(null=True, blank=True)
@@ -130,7 +130,7 @@ class AuditLog(models.Model):
 
 
 class SMSVerification(models.Model):
-    """Stores SMS verification codes for institutions."""
+    """Stocke les codes de vérification SMS pour les institutions."""
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='sms_verifications')
     code = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
