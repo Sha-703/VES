@@ -26,7 +26,13 @@ export default function InstitutionLogin() {
       localStorage.setItem('institution_id', res.data.institution.id);
       navigate('/institution/dashboard');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Identifiants invalides');
+      // Affiche un message d'erreur en français si les identifiants sont invalides
+      const msg = err.response?.data?.detail;
+      if (msg && (msg.toLowerCase().includes('invalid credentials') || msg.toLowerCase().includes('identifiants invalides'))) {
+        setError('Identifiants incorrects. Veuillez vérifier le nom de l’institution et le mot de passe.');
+      } else {
+        setError(msg || 'Identifiants invalides');
+      }
     } finally {
       setLoading(false);
     }

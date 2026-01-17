@@ -25,7 +25,13 @@ export default function VoterLogin() {
       localStorage.setItem('institution_id', form.institution_id);
       navigate('/voter/ballots');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Matricule invalide ou institution incorrecte');
+      // Affiche un message d'erreur en français si les identifiants sont invalides
+      const msg = err.response?.data?.detail;
+      if (msg && (msg.toLowerCase().includes('invalid credentials') || msg.toLowerCase().includes('identifiants invalides'))) {
+        setError('Identifiants incorrects. Veuillez vérifier votre matricule et le numéro de l’établissement.');
+      } else {
+        setError(msg || 'Matricule invalide ou institution incorrecte');
+      }
     } finally {
       setLoading(false);
     }

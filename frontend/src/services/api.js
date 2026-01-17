@@ -11,6 +11,7 @@ const api = axios.create({
   withCredentials: import.meta.env.VITE_API_WITH_CREDENTIALS === 'true' || false,
 });
 
+
 // Ajoute le token aux requêtes si disponible
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -20,6 +21,26 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Intercepteur de réponse pour gérer l'absence ou l'invalidité du token
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Affiche une alerte utilisateur en français si le token est absent ou invalide
+      if (typeof window !== 'undefined') {
+        window.alert("Votre session a expiré ou vous n'êtes pas authentifié. Veuillez vous reconnecter.");
+      }
+      // Nettoie le token pour forcer la reconnexion
+      localStorage.removeItem('token');
+      // Redirige vers la page de connexion institution si possible
+      if (typeof window !== 'undefined' && window.location.pathname !== '/institution/login') {
+        window.location.href = '/institution/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Authentification Institution
 export const institutionRegister = (username, email, password, institution_name, institution_description = '') =>
