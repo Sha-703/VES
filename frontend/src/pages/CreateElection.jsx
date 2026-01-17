@@ -5,7 +5,7 @@ import { Alert } from '../components/FormComponents';
 
 export default function CreateElection() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ title: '', description: '', scrutin_type: 'majoritaire_1tour', majority_threshold: 50.0, advance_threshold: 0.0, start: '', end: '' });
+  const [form, setForm] = useState({ title: '', description: '', scrutin_type: 'majoritaire_1tour', start: '', end: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -25,8 +25,8 @@ export default function CreateElection() {
         form.title,
         form.description,
         form.scrutin_type,
-        form.scrutin_type === 'majoritaire_2tours' ? form.majority_threshold : null,
-        form.scrutin_type === 'majoritaire_2tours' ? form.advance_threshold : null,
+        null, // majority_threshold n'est plus demandé
+        null, // advance_threshold n'est plus demandé
         startIso,
         endIso,
         false
@@ -88,15 +88,7 @@ export default function CreateElection() {
                 <option value="majoritaire_2tours">Scrutin majoritaire — 2 tours</option>
               </select>
 
-              {form.scrutin_type === 'majoritaire_2tours' && (
-                <div style={{ marginTop: 12 }}>
-                  <label style={{ display: 'block', marginBottom: 8, fontSize: 13 }}>Seuil de majorité absolue (%)</label>
-                  <input type="number" value={form.majority_threshold} onChange={(e) => setForm({ ...form, majority_threshold: parseFloat(e.target.value) })} min={0} max={100} step={0.1} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #ddd' }} />
-
-                  <label style={{ display: 'block', marginTop: 10, marginBottom: 8, fontSize: 13 }}>Seuil pour qualification au 2e tour (%)</label>
-                  <input type="number" value={form.advance_threshold} onChange={(e) => setForm({ ...form, advance_threshold: parseFloat(e.target.value) })} min={0} max={100} step={0.1} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #ddd' }} />
-                </div>
-              )}
+              {/* Les seuils ne sont plus affichés */}
 
               <div style={{ marginTop: 12 }}>
                 <label style={{ display: 'block', marginBottom: 8, fontSize: 13 }}>Date début (élection)</label>
