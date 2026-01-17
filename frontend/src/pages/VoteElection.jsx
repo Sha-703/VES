@@ -25,6 +25,7 @@ export default function VoteElection() {
 
   const loadElection = async () => {
     try {
+      console.log('Appel API:', `${API_HOST}/api/elections/${electionId}/`);
       const res = await getElection(electionId, voterId);
       if (res.data?.voter_has_voted) {
         setError('Désolé vous avez déjà voté pour cette élection');
@@ -34,6 +35,7 @@ export default function VoteElection() {
       setElection(res.data);
     } catch (err) {
       setError('Erreur de chargement');
+      console.error('Erreur API getElection:', err);
     }
   };
 
