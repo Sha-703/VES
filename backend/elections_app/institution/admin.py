@@ -20,9 +20,10 @@ class InstitutionAdmin(admin.ModelAdmin):
     list_display = ('name', 'user', 'created_at')
 
 
+
 @admin.register(Election)
 class ElectionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'institution', 'scrutin_type', 'created_at')
+    list_display = ('id', 'title', 'institution', 'scrutin_type', 'created_at')
 
 
 
