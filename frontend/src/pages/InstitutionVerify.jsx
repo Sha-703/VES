@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 export default function InstitutionVerify() {
   const navigate = useNavigate();
   useEffect(() => {
-    navigate('/institution/login');
+    navigate('/');
   }, [navigate]);
   return null;
 }

@@ -35,7 +35,7 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       // Redirige vers la page de connexion institution si possible
       if (typeof window !== 'undefined' && window.location.pathname !== '/institution/login') {
-        window.location.href = '/institution/login';
+        window.location.href = '/';
       }
     }
     return Promise.reject(error);

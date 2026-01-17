@@ -17,7 +17,7 @@ export default function ImportHistory() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      navigate('/institution/login');
+      navigate('/');
       return;
     }
     loadData();

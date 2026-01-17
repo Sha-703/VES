@@ -11,6 +11,7 @@ export default function VoteElection() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingElection, setLoadingElection] = useState(true);
 
   const voterId = localStorage.getItem('voter_id');
   const voterName = localStorage.getItem('voter_name');
@@ -24,18 +25,25 @@ export default function VoteElection() {
   }, []);
 
   const loadElection = async () => {
+    setLoadingElection(true);
+    setError('');
     try {
-      console.log('Appel API:', `${API_HOST}/api/elections/${electionId}/`);
       const res = await getElection(electionId, voterId);
       if (res.data?.voter_has_voted) {
-        setError('Désolé vous avez déjà voté pour cette élection');
+        setError('Désolé, vous avez déjà voté pour cette élection');
         setElection(res.data);
+        setLoadingElection(false);
         return;
       }
       setElection(res.data);
     } catch (err) {
-      setError('Erreur de chargement');
-      console.error('Erreur API getElection:', err);
+      if (err?.response?.status === 404) {
+        setError("Cette élection n'existe pas ou a été supprimée.");
+      } else {
+        setError("Erreur de chargement de l'élection. Vérifiez votre connexion ou réessayez plus tard.");
+      }
+    } finally {
+      setLoadingElection(false);
     }
   };
 
@@ -60,7 +68,20 @@ export default function VoteElection() {
     }
   };
 
-  if (!election) return <div style={{ textAlign: 'center', padding: '40px' }}>Chargement...</div>;
+  if (loadingElection) {
+    return <div style={{ textAlign: 'center', padding: '40px' }}>Chargement de l'élection...</div>;
+  }
+  if (error && !election) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px' }}>
+        <div style={{ color: 'red', marginBottom: 16 }}>{error}</div>
+        <button onClick={() => navigate('/voter/ballots')} className="btn-primary">Retour à la liste</button>
+      </div>
+    );
+  }
+  if (!election) {
+    return <div style={{ textAlign: 'center', padding: '40px' }}>Aucune donnée d'élection trouvée.</div>;
+  }
 
   return (
     <div className="container" style={{ maxWidth: '800px', marginTop: '40px', marginBottom: '40px' }}>

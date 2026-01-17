@@ -40,7 +40,7 @@ export default function InstitutionRegister() {
         form.institution_description
       );
       // Registration successful — redirect to the login page so the user can authenticate immediately.
-      setTimeout(() => navigate('/institution/login'), 600);
+      setTimeout(() => navigate('/'), 600);
     } catch (err) {
       // Extraire les messages d'erreur renvoyés par le backend (peut être un objet champ -> [erreurs])
       const data = err.response?.data;

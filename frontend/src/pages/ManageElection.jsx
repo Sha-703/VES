@@ -54,7 +54,7 @@ export default function ManageElection() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      navigate('/institution/login');
+      navigate('/');
       return;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

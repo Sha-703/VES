@@ -127,7 +127,7 @@ export default function InstitutionDashboard() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      navigate('/institution/login');
+      navigate('/');
       return;
     }
     loadData();
@@ -166,7 +166,7 @@ export default function InstitutionDashboard() {
     } catch (err) {
       if (err.response?.status === 401) {
         localStorage.removeItem('token');
-        navigate('/institution/login');
+        navigate('/');
       } else {
         setError('Erreur de chargement');
       }

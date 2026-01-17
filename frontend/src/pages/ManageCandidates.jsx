@@ -18,7 +18,7 @@ export default function ManageCandidates() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) return navigate('/institution/login');
+    if (!token) return navigate('/');
     loadElection();
   }, []);
 
