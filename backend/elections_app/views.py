@@ -10,13 +10,16 @@ from elections_app.institution.views import (
     VoterViewSet,
 )
 
+
 # Import and re-export voter views
 from elections_app.voter.views import (
     voter_login,
     VoteViewSet,
+    verify_voter_email,
 )
 
 __all__ = [
     'institution_register', 'institution_login', 'voter_login',
-    'InstitutionViewSet', 'ElectionViewSet', 'CandidateViewSet', 'VoterViewSet', 'VoteViewSet'
+    'InstitutionViewSet', 'ElectionViewSet', 'CandidateViewSet', 'VoterViewSet', 'VoteViewSet',
+    'verify_voter_email',
 ]
