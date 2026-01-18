@@ -170,6 +170,7 @@ class VoteViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'], url_path='has_voted', url_name='has_voted')
     def has_voted(self, request):
+        print(f"[has_voted] voter_id={request.query_params.get('voter_id')}, election_id={request.query_params.get('election_id')}")
         """Vérifie si un électeur a déjà voté dans une élection donnée.
 
         Attend les paramètres de requête : `voter_id` et `election_id`.
