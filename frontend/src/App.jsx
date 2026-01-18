@@ -2,6 +2,7 @@ import React from 'react'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import logo from './assets/logo-white.svg'
+import VoterGoogleVerify from './pages/VoterGoogleVerify';
 
 // Pages
 import Home from './pages/Home'
@@ -49,6 +50,7 @@ function App() {
 
               {/* Voter Routes */}
               <Route path="/voter/login" element={<VoterLogin />} />
+              <Route path="/voter/google-verify" element={<VoterGoogleVerify />} />
               <Route path="/voter/ballots" element={<VoterElections />} />
               <Route path="/voter/vote_election/:electionId" element={<VoteElection />} />
               <Route path="/voter/verify-email" element={<VoterEmailVerify />} />
