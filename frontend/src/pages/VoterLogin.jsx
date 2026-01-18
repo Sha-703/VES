@@ -58,7 +58,7 @@ export default function VoterLogin() {
         required
       />
       <FormField
-        label="Email (utilisé pour Google)"
+        label="Email"
         name="email"
         type="email"
         value={form.email}

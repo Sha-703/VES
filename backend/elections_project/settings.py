@@ -4,11 +4,12 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
-# DEBUG peut être défini via une variable d'environnement (par exemple 'True'/'False') pour les déploiements
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes')
-# Permet de configurer les hôtes autorisés via une variable d'environnement (séparés par des virgules). Par défaut '*'.
-_allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*')
-ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(',') if h.strip()]
+
+# En production, DEBUG doit être False
+DEBUG = False
+
+# Définir explicitement les hôtes autorisés pour la production
+ALLOWED_HOSTS = ['vote-electronique-sur.onrender.com', 'localhost', '127.0.0.1']
 
 # Pendant le développement local, les emails sont affichés dans la console pour rendre les liens de vérification visibles
 # Configuration des emails
