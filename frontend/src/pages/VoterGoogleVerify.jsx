@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { FormContainer, Alert, FormField } from '../components/FormComponents';
@@ -12,6 +12,14 @@ export default function VoterGoogleVerify() {
   const institution_id = localStorage.getItem('institution_id');
   const identifier = localStorage.getItem('voter_identifier'); // Utilise le matricule réel
   const email = localStorage.getItem('voter_email');
+  const voter_id = localStorage.getItem('voter_id');
+
+  useEffect(() => {
+    if (!voter_id || voter_id === 'undefined' || voter_id === 'null') {
+      setError("Session expirée ou identifiant électeur manquant. Veuillez vous reconnecter.");
+      setTimeout(() => navigate('/voter/login'), 2000);
+    }
+  }, [voter_id, navigate]);
 
   const handleGoogleSuccess = async (credentialResponse) => {
     setLoading(true);
