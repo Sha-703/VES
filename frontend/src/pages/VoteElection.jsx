@@ -17,12 +17,15 @@ export default function VoteElection() {
   const voterName = localStorage.getItem('voter_name');
 
   useEffect(() => {
-    if (!voterId) {
-      navigate('/voter/login');
+    if (!voterId || voterId === 'undefined' || voterId === 'null') {
+      setError("Session expirée ou identifiant électeur manquant. Veuillez vous reconnecter.");
+      setTimeout(() => navigate('/voter/login'), 2000);
       return;
     }
     loadElection();
   }, []);
+
+  // ...existing code...
 
   const loadElection = async () => {
     setLoadingElection(true);
