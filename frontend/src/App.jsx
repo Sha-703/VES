@@ -16,7 +16,7 @@ import VoterLogin from './pages/VoterLogin'
 import VoterElections from './pages/VoterElections'
 import VoteElection from './pages/VoteElection'
 import { Footer } from './components/FormComponents'
-import InstitutionSettings from './pages/InstitutionSettings'
+// ...existing code...
 
 function App() {
   return (
@@ -36,7 +36,7 @@ function App() {
         {/* Page de vérification supprimée : les utilisateurs peuvent se connecter immédiatement après l'inscription */}
         <Route path="/institution/dashboard" element={<InstitutionDashboard />} />
         <Route path="/institution/imports" element={<ImportHistory />} />
-        <Route path="/institution/settings" element={<InstitutionSettings />} />
+        {/* <Route path="/institution/settings" element={<InstitutionSettings />} /> */}
         <Route path="/institution/election/new" element={<CreateElection />} />
         <Route path="/institution/election/:electionId" element={<ManageElection />} />
         <Route path="/institution/election/:electionId/candidates" element={<ManageCandidates />} />

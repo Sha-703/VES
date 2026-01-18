@@ -38,7 +38,7 @@ export default function VoteElection() {
       setElection(res.data);
     } catch (err) {
       if (err?.response?.status === 404) {
-        setError("Cette élection n'existe pas ou a été supprimée.");
+          setError("Cette élection est fermée, n'est pas encore ouverte, ou vous n'y avez pas accès. Veuillez vérifier les dates d'ouverture ou contacter l'institution.");
       } else {
         setError("Erreur de chargement de l'élection. Vérifiez votre connexion ou réessayez plus tard.");
       }

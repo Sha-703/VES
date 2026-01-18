@@ -23,6 +23,8 @@ export default function VoterLogin() {
       // Le backend renvoie parfois encore un nom de votant ; le sauvegarder si présent
       if (res.data.name) localStorage.setItem('voter_name', res.data.name);
       localStorage.setItem('institution_id', form.institution_id);
+      // Stocker le token pour authentifier les requêtes API
+      if (res.data.token) localStorage.setItem('token', res.data.token);
       navigate('/voter/ballots');
     } catch (err) {
       // Affiche un message d'erreur en français si les identifiants sont invalides

@@ -256,7 +256,6 @@ export default function InstitutionDashboard() {
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <button onClick={() => navigate('/institution/election/new')} className="btn-primary">Créer une élection</button>
-          <button onClick={() => navigate('/institution/settings')} className="btn-secondary">Paramètres</button>
           <button onClick={handleLogout} className="btn-secondary">Déconnexion</button>
         </div>
       </div>

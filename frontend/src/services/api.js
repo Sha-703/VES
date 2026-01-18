@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Utilise la variable d'environnement pour l'hôte backend si disponible (Vite).
-// Permet de configurer le backend déployé sans modifier le code source.
+// Pour le développement local, pointer vers http://127.0.0.1:8000
 const API_HOST = import.meta.env.VITE_API_BASE_URL || 'https://ves-mg2a.onrender.com';
 const API_BASE = `${API_HOST}/api/`;
 
@@ -81,8 +81,11 @@ export const createElection = (title, description, scrutin_type, majority_thresh
 export const getElections = (institutionId = null) =>
   api.get('/elections/', { params: institutionId ? { institution: institutionId } : {} });
 
-export const getElection = (id) =>
-  api.get(`/elections/${id}/`);
+export const getElection = (id) => {
+  const institutionId = localStorage.getItem('institution_id');
+  const params = institutionId ? { institution: institutionId } : {};
+  return api.get(`/elections/${id}/`, { params });
+};
 
 export const getElectionResults = (id) =>
   api.get(`/elections/${id}/results/`);

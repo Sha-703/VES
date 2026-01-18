@@ -440,29 +440,30 @@ class ElectionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        # Si utilisateur institution authentifié, retourner ses élections.
-        if self.request.user and getattr(self.request.user, 'is_authenticated', False):
-            try:
-                institution = get_object_or_404(Institution, user=self.request.user)
-                qs = Election.objects.filter(institution=institution)
-                # S'assurer que les élections expirées sont bien clôturées avant affichage dans l'UI
-                try:
-                    for e in qs:
-                        try:
-                            auto_close_election(e)
-                        except Exception:
-                            # Ne pas bloquer l'affichage en cas d'échec de clôture automatique
-                            continue
-                except Exception:
-                    pass
-                return qs
-            except Exception:
-                return Election.objects.none()
-
-        # Autoriser l'affichage anonyme en passant ?institution=<id>
+        """
+        - Si utilisateur institution authentifié : retourne toutes ses élections (gestion).
+        - Si ?institution=ID fourni (électeur ou anonyme) : retourne uniquement les élections ouvertes de cette institution.
+        """
+        user = self.request.user
         institution_id = self.request.query_params.get('institution') or self.request.query_params.get('institution_id')
+        now = timezone.now()
+
+        # Cas institution connectée (gestion)
+        if user.is_authenticated and hasattr(user, 'institution'):
+            institution = user.institution
+            qs = Election.objects.filter(institution=institution)
+            for e in qs:
+                pass  # Suppression de la clôture automatique
+            return qs
+
+        # Cas électeur ou anonyme : ne retourner que les élections ouvertes de l'institution demandée
         if institution_id:
-            return Election.objects.filter(institution__id=institution_id)
+            return Election.objects.filter(
+                institution__id=institution_id,
+                start__lte=now,
+                end__gt=now,
+                closed=False
+            )
 
         return Election.objects.none()
 
@@ -536,13 +537,21 @@ class ElectionViewSet(viewsets.ModelViewSet):
         # Remarque : la création automatique de bulletins est supprimée — les institutions doivent créer les bulletins explicitement.
 
     def get_object(self):
-        # S'assurer que l'élection récupérée est clôturée automatiquement si sa date de fin est atteinte.
+        """
+        - Institution connectée : accès à toutes ses élections.
+        - Électeur/anonyme : accès uniquement aux élections ouvertes de l'institution.
+        """
         obj = super().get_object()
-        try:
-            auto_close_election(obj)
-        except Exception:
-            pass
-        return obj
+        user = self.request.user
+        now = timezone.now()
+        # Si institution propriétaire connectée, accès total
+        if user.is_authenticated and hasattr(user, 'institution') and obj.institution == user.institution:
+            return obj
+        # Sinon, accès seulement si l'élection est ouverte
+        if obj.start and obj.end and obj.start <= now < obj.end and not obj.closed:
+            return obj
+        from rest_framework.exceptions import NotFound
+        raise NotFound("Cette élection est fermée, n'est pas encore ouverte, ou vous n'y avez pas accès. Veuillez vérifier les dates d'ouverture ou contacter l'institution.")
 
     def _get_participation_rate_for_election(self, election):
         """Return participation rate (%) for the whole election based on eligible voters of the institution."""
@@ -707,15 +716,16 @@ class ElectionViewSet(viewsets.ModelViewSet):
         election = self.get_object()
         open_immediately = bool(request.data.get('open_immediately'))
         now = timezone.now()
-        # With ballot removed, opening an election means ensuring its start is set.
         opened = []
         if open_immediately:
-            if not election.start:
-                election.start = now
-                election.save()
+            # Toujours définir start et end pour garantir l'ouverture
+            default_duration = timezone.timedelta(hours=24)
+            election.start = now
+            election.end = now + default_duration
+            election.closed = False
+            election.save()
             opened.append(election.id)
 
-        # For frontend compatibility return both 'opened' and 'opened_ballots'
         AuditLog.objects.create(action='election_opened', actor=request.user.username, detail={'election_id': election.id, 'opened': opened})
         return Response({'status': 'opened', 'opened': opened, 'opened_ballots': opened}, status=status.HTTP_200_OK)
 

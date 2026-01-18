@@ -1,3 +1,4 @@
+from rest_framework.authtoken.models import Token
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -32,7 +33,13 @@ def voter_login(request):
     if not voter.eligible:
         return Response({'detail': 'Voter not eligible.'}, status=status.HTTP_403_FORBIDDEN)
 
-    return Response({'voter_id': voter.id, 'identifier': voter.identifier, 'name': voter.name}, status=status.HTTP_200_OK)
+    # Créer ou récupérer un token pour l'électeur (lié à l'utilisateur associé si existant)
+    # Si le modèle Voter n'est pas lié à User, il faut créer un User pour chaque électeur
+    from django.contrib.auth.models import User
+    user, created = User.objects.get_or_create(username=f"voter_{voter.id}")
+    token, _ = Token.objects.get_or_create(user=user)
+
+    return Response({'voter_id': voter.id, 'identifier': voter.identifier, 'name': voter.name, 'token': token.key}, status=status.HTTP_200_OK)
 
 
 class VoteViewSet(viewsets.ViewSet):
