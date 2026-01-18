@@ -68,23 +68,22 @@ def voter_login(request):
         except Exception as e:
             return Response({'detail': f"Erreur de vérification Google: {str(e)}"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # Vérification email : si non vérifié, envoyer un mail avec un lien/token
+    # Désormais, la vérification de l'email n'est plus bloquante :
+    # On peut envoyer le mail de vérification en arrière-plan, mais on ne bloque plus l'accès à la suite.
     if email and (not voter.email_verified or voter.email_verification_token is None):
         import secrets
         from django.core.mail import send_mail
         from django.conf import settings
-        # Générer un token unique
         token = secrets.token_urlsafe(32)
         voter.email_verification_token = token
         voter.save(update_fields=["email_verification_token"])
-        # Construire le lien de vérification (à adapter selon le frontend)
         frontend_url = 'https://vote-electronique-sur.onrender.com'
         verify_link = f"{frontend_url}/voter/verify-email?token={token}&voter_id={voter.id}"
         subject = "Vérification de votre email pour le vote électronique"
         body = f"Bonjour,\n\nPour valider votre identité et accéder au vote, veuillez cliquer sur ce lien : {verify_link}\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez ce message."
         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@ves')
         send_mail(subject, body, from_email, [email], fail_silently=True)
-        return Response({'detail': 'Un email de vérification a été envoyé. Veuillez vérifier votre boîte mail.'}, status=status.HTTP_202_ACCEPTED)
+        # On continue le process sans bloquer l'utilisateur
 
     # Créer ou récupérer un token pour l'électeur (lié à l'utilisateur associé si existant)
     from django.contrib.auth.models import User
