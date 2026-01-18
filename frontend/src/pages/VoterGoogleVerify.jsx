@@ -10,7 +10,7 @@ export default function VoterGoogleVerify() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const institution_id = localStorage.getItem('institution_id');
-  const identifier = localStorage.getItem('voter_id');
+  const identifier = localStorage.getItem('voter_identifier'); // Utilise le matricule réel
 
   const handleGoogleSuccess = async (credentialResponse) => {
     setLoading(true);

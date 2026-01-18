@@ -21,6 +21,7 @@ export default function VoterLogin() {
     try {
       const res = await voterLogin(form.identifier, form.institution_id);
       localStorage.setItem('voter_id', res.data.voter_id);
+      localStorage.setItem('voter_identifier', form.identifier); // Stocke le matricule réel
       if (res.data.name) localStorage.setItem('voter_name', res.data.name);
       localStorage.setItem('institution_id', form.institution_id);
       // Rediriger vers la vérification Google
