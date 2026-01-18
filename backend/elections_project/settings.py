@@ -9,7 +9,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 DEBUG = False
 
 # Définir explicitement les hôtes autorisés pour la production
-ALLOWED_HOSTS = ['vote-electronique-sur.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['ves-mg2a.onrender.com', 'localhost', '127.0.0.1']
 
 # Pendant le développement local, les emails sont affichés dans la console pour rendre les liens de vérification visibles
 # Configuration des emails
@@ -128,7 +128,10 @@ else:
 # Allow sending cookies if needed (disabled by default). Configure via env var.
 CORS_ALLOW_CREDENTIALS = os.environ.get('CORS_ALLOW_CREDENTIALS', 'False').lower() in ('1', 'true', 'yes')
 # Configure CSRF trusted origins for cross-site protection (comma-separated)
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://vote-electronique-sur.onrender.com').split(',') if o.strip()]
+CSRF_TRUSTED_ORIGINS = [
+    'https://vote-electronique-sur.onrender.com',
+    'https://ves-mg2a.onrender.com'
+]
 
 # REST Framework configuration
 REST_FRAMEWORK = {
