@@ -1,3 +1,5 @@
+from rest_framework.decorators import api_view, permission_classes, action
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_voter_email(request):
