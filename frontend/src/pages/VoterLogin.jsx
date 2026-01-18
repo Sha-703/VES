@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { FormField, FormContainer, Alert } from '../components/FormComponents';
 
 export default function VoterLogin() {
-  const [form, setForm] = useState({ identifier: '', institution_id: '' });
+  const [form, setForm] = useState({ identifier: '', institution_id: '', email: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,9 +19,10 @@ export default function VoterLogin() {
     setLoading(true);
     setError('');
     try {
-      const res = await voterLogin(form.identifier, form.institution_id);
+      const res = await voterLogin(form.identifier, form.institution_id, null, form.email);
       localStorage.setItem('voter_id', res.data.voter_id);
       localStorage.setItem('voter_identifier', form.identifier); // Stocke le matricule réel
+      localStorage.setItem('voter_email', form.email); // Stocke l'email
       if (res.data.name) localStorage.setItem('voter_name', res.data.name);
       localStorage.setItem('institution_id', form.institution_id);
       // Rediriger vers la vérification Google
@@ -56,7 +57,14 @@ export default function VoterLogin() {
         onChange={handleChange}
         required
       />
-      {/* Plus de champ email ici, la vérification Google se fait sur la page suivante */}
+      <FormField
+        label="Email (utilisé pour Google)"
+        name="email"
+        type="email"
+        value={form.email}
+        onChange={handleChange}
+        required
+      />
     </FormContainer>
   );
 }

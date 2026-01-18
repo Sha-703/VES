@@ -8,20 +8,15 @@ import { voterLogin } from '../services/api';
 export default function VoterGoogleVerify() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
   const navigate = useNavigate();
   const institution_id = localStorage.getItem('institution_id');
   const identifier = localStorage.getItem('voter_identifier'); // Utilise le matricule réel
+  const email = localStorage.getItem('voter_email');
 
   const handleGoogleSuccess = async (credentialResponse) => {
     setLoading(true);
     setError('');
     try {
-      if (!email) {
-        setError('Veuillez saisir votre email.');
-        setLoading(false);
-        return;
-      }
       // On envoie le token Google au backend pour vérification
       const res = await voterLogin(identifier, institution_id, credentialResponse.credential, email);
       if (res.data.token) localStorage.setItem('token', res.data.token);
@@ -40,14 +35,6 @@ export default function VoterGoogleVerify() {
   return (
     <FormContainer title="Vérification Google" submitText={null} loading={loading}>
       {error && <Alert type="error">{error}</Alert>}
-      <FormField
-        label="Votre email (utilisé pour Google)"
-        name="email"
-        type="email"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-        required
-      />
       <div style={{ margin: '20px 0', textAlign: 'center' }}>
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
