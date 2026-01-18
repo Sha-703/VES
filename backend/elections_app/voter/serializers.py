@@ -4,8 +4,11 @@ from elections_app.models import Vote
 
 class VoterLoginSerializer(serializers.Serializer):
     identifier = serializers.CharField()
+    institution_id = serializers.CharField()  # rendre obligatoire côté backend
     # le nom est maintenant optionnel pour permettre l'authentification par identifiant + institution uniquement
     name = serializers.CharField(required=False, allow_blank=True)
+    google_token = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.EmailField(required=False, allow_blank=True)
 
 
 class VoteSerializer(serializers.ModelSerializer):

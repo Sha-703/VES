@@ -56,8 +56,13 @@ export const institutionLogin = (institution_name, password) =>
   api.post('/auth/institution/login/', { institution_name, password });
 
 // Authentification Votant
-export const voterLogin = (identifier, institution_id) =>
-  api.post('/auth/voter/login/', { identifier, institution_id });
+// Ajout du token Google et de l'email pour la vérification OAuth
+export const voterLogin = (identifier, institution_id, google_token = null, email = null) => {
+  const data = { identifier, institution_id };
+  if (google_token) data.google_token = google_token;
+  if (email) data.email = email;
+  return api.post('/auth/voter/login/', data);
+};
 
 // Endpoints Institution
 export const getMyInstitution = () =>

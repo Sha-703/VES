@@ -21,7 +21,9 @@ def voter_login(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     identifier = serializer.validated_data['identifier']
-    institution_id = request.data.get('institution_id')
+    institution_id = serializer.validated_data.get('institution_id')
+    google_token = serializer.validated_data.get('google_token')
+    email = serializer.validated_data.get('email')
 
     if not institution_id:
         return Response({'detail': 'Missing institution_id.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -33,8 +35,19 @@ def voter_login(request):
     if not voter.eligible:
         return Response({'detail': 'Voter not eligible.'}, status=status.HTTP_403_FORBIDDEN)
 
+    # Si un token Google est fourni, vérifier l'email avec google-auth
+    if google_token:
+        try:
+            from google.oauth2 import id_token
+            from google.auth.transport import requests as google_requests
+            idinfo = id_token.verify_oauth2_token(google_token, google_requests.Request())
+            google_email = idinfo.get('email')
+            if not google_email or not email or google_email.lower() != email.lower():
+                return Response({'detail': "L'email Google ne correspond pas à l'email fourni."}, status=status.HTTP_401_UNAUTHORIZED)
+        except Exception as e:
+            return Response({'detail': f"Erreur de vérification Google: {str(e)}"}, status=status.HTTP_401_UNAUTHORIZED)
+
     # Créer ou récupérer un token pour l'électeur (lié à l'utilisateur associé si existant)
-    # Si le modèle Voter n'est pas lié à User, il faut créer un User pour chaque électeur
     from django.contrib.auth.models import User
     user, created = User.objects.get_or_create(username=f"voter_{voter.id}")
     token, _ = Token.objects.get_or_create(user=user)
