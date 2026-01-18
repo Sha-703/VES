@@ -168,7 +168,7 @@ class VoteViewSet(viewsets.ViewSet):
         except Exception as e:
             return Response({'detail': f'Error recording vote: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='has_voted', url_name='has_voted')
     def has_voted(self, request):
         """Vérifie si un électeur a déjà voté dans une élection donnée.
 
