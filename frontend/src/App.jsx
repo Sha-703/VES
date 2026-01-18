@@ -50,6 +50,7 @@ function App() {
               <Route path="/voter/login" element={<VoterLogin />} />
               <Route path="/voter/ballots" element={<VoterElections />} />
               <Route path="/voter/vote_election/:electionId" element={<VoteElection />} />
+              <Route path="/voter/verify-email" element={<(await import('./pages/VoterEmailVerify.jsx')).default />} />
             </Routes>
           </main>
           <Footer />

@@ -74,8 +74,10 @@ class Voter(models.Model):
     identifier = models.CharField(max_length=200)  # ex : identifiant étudiant ou email
     name = models.CharField(max_length=200, blank=True)
     eligible = models.BooleanField(default=True)
+    email_verified = models.BooleanField(default=False)
     import_file = models.ForeignKey('VoterImportFile', null=True, blank=True, on_delete=models.SET_NULL, related_name='voters')
     created_at = models.DateTimeField(auto_now_add=True)
+    email_verification_token = models.CharField(max_length=64, blank=True, null=True)
 
     class Meta:
         unique_together = ('institution', 'identifier')  # Unicité par institution et identifiant

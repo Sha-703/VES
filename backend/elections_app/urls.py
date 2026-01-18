@@ -4,6 +4,7 @@ from elections_app.views import (
     InstitutionViewSet, ElectionViewSet, CandidateViewSet, 
     VoterViewSet, VoteViewSet,
     institution_register, institution_login, voter_login,
+    verify_voter_email,
 )
 # Verification-related views removed from URL config (verification disabled)
 
@@ -20,4 +21,5 @@ urlpatterns = [
     path('auth/institution/register/', institution_register, name='institution_register'),
     path('auth/institution/login/', institution_login, name='institution_login'),
     path('auth/voter/login/', voter_login, name='voter_login'),
+    path('auth/voter/verify_email/', verify_voter_email, name='verify_voter_email'),
 ]
