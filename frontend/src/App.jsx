@@ -16,6 +16,7 @@ import CreateElection from './pages/CreateElection'
 import VoterLogin from './pages/VoterLogin'
 import VoterElections from './pages/VoterElections'
 import VoteElection from './pages/VoteElection'
+import VoterEmailVerify from './pages/VoterEmailVerify'
 import { Footer } from './components/FormComponents'
 // ...existing code...
 
@@ -50,7 +51,7 @@ function App() {
               <Route path="/voter/login" element={<VoterLogin />} />
               <Route path="/voter/ballots" element={<VoterElections />} />
               <Route path="/voter/vote_election/:electionId" element={<VoteElection />} />
-              <Route path="/voter/verify-email" element={<(await import('./pages/VoterEmailVerify.jsx')).default />} />
+              <Route path="/voter/verify-email" element={<VoterEmailVerify />} />
             </Routes>
           </main>
           <Footer />
