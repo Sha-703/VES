@@ -43,6 +43,8 @@ class Election(models.Model):
     end = models.DateTimeField(null=True, blank=True)
     # Indicateur explicite pour enregistrer que l'élection est clôturée (défini par le planificateur/commande de gestion)
     closed = models.BooleanField(default=False)
+    # Restreindre le vote à une liste blanche de votants (si True, seuls les votants dans ElectionVoterEligibility peuvent voter)
+    restrict_voters = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.title} ({self.institution.name})"
@@ -118,6 +120,23 @@ class Vote(models.Model):
         if self.election:
             return f"{self.voter.identifier} voted for {cand} in election {self.election.title}"
         return f"{self.voter.identifier} voted for {cand}"
+
+
+class ElectionVoterEligibility(models.Model):
+    """Spécifie quelle liste de votants est autorisée à voter pour une élection donnée.
+    
+    Utilisé quand restrict_voters=True sur Election. Permet de créer des listes blanches
+    par élection pour restreindre qui peut participer.
+    """
+    election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='eligible_voters')
+    voter = models.ForeignKey(Voter, on_delete=models.CASCADE, related_name='election_eligibilities')
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('election', 'voter')  # Une entrée par (élection, votant)
+
+    def __str__(self):
+        return f"{self.voter.identifier} eligible for {self.election.title}"
 
 
 class AuditLog(models.Model):

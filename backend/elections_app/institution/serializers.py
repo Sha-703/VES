@@ -41,12 +41,24 @@ class InstitutionRegisterSerializer(serializers.Serializer):
 
 class CandidateSerializer(serializers.ModelSerializer):
     vote_count = serializers.SerializerMethodField()
+    photo = serializers.SerializerMethodField()
 
     class Meta:
         model = Candidate
         # exposer le champ photo pour permettre l'upload via l'API
         fields = ('id', 'name', 'bio', 'position', 'photo', 'vote_count', 'election', 'created_at')
         read_only_fields = ('created_at',)
+
+    def get_photo(self, obj):
+        """Retourne l'URL absolue de la photo."""
+        if not obj.photo:
+            return None
+        request = self.context.get('request')
+        if request:
+            # Retourner l'URL absolue
+            return request.build_absolute_uri(obj.photo.url) if obj.photo else None
+        # Fallback : retourner l'URL relative si pas de contexte
+        return obj.photo.url if obj.photo else None
 
     def get_vote_count(self, obj):
         return obj.votes.count()

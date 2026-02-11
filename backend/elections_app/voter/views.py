@@ -68,22 +68,18 @@ def voter_login(request):
         except Exception as e:
             return Response({'detail': f"Erreur de vérification Google: {str(e)}"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # Désormais, la vérification de l'email n'est plus bloquante :
-    # On peut envoyer le mail de vérification en arrière-plan, mais on ne bloque plus l'accès à la suite.
+    # Vérification de l'email : envoyer le mail en arrière-plan si nécessaire
+    # (asynchrone avec threading, ou Celery pour la production)
     if email and (not voter.email_verified or voter.email_verification_token is None):
         import secrets
-        from django.core.mail import send_mail
-        from django.conf import settings
+        from elections_app.utils import send_verification_email_async
+        
         token = secrets.token_urlsafe(32)
         voter.email_verification_token = token
         voter.save(update_fields=["email_verification_token"])
-        frontend_url = 'https://vote-electronique-sur.onrender.com'
-        verify_link = f"{frontend_url}/voter/verify-email?token={token}&voter_id={voter.id}"
-        subject = "Vérification de votre email pour le vote électronique"
-        body = f"Bonjour,\n\nPour valider votre identité et accéder au vote, veuillez cliquer sur ce lien : {verify_link}\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez ce message."
-        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@ves')
-        send_mail(subject, body, from_email, [email], fail_silently=True)
-        # On continue le process sans bloquer l'utilisateur
+        
+        # Envoyer l'email de manière asynchrone (ne bloque pas la requête)
+        send_verification_email_async(voter.id, email, token)
 
     # Créer ou récupérer un token pour l'électeur (lié à l'utilisateur associé si existant)
     from django.contrib.auth.models import User

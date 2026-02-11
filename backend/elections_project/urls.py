@@ -60,7 +60,9 @@ urlpatterns = [
     path('api/', include('elections_app.urls')),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Servir les fichiers médias (photos, candidats, etc.) en développement et production
+# En production avec Render/gunicorn, WhiteNoise gère également les fichiers médias
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 handler404 = 'elections_project.urls.custom_404'

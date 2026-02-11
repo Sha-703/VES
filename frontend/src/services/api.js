@@ -5,12 +5,22 @@ import axios from 'axios';
 const API_HOST = import.meta.env.VITE_API_BASE_URL || 'https://ves-mg2a.onrender.com';
 const API_BASE = `${API_HOST}/api/`;
 
+// Exporte API_HOST pour que le frontend puisse construire les URLs des médias
+export { API_HOST };
+
 // Remarque : `withCredentials` est à false par défaut car l'application utilise l'authentification par token dans l'en-tête `Authorization`. Si vous passez à une authentification par cookie/session, définissez `VITE_API_WITH_CREDENTIALS=true` dans l'environnement et le backend doit activer `CORS_ALLOW_CREDENTIALS`.
 const api = axios.create({
   baseURL: API_BASE,
   withCredentials: import.meta.env.VITE_API_WITH_CREDENTIALS === 'true' || false,
+  timeout: 30000, // Augmenté à 30s pour les appels lents
 });
 
+// Cache simple pour les résultats de login (évite les requêtes répétées)
+const loginCache = {
+  institution: null,
+  voter: null,
+  expiresAt: 0,
+};
 
 // Ajoute le token aux requêtes si disponible
 api.interceptors.request.use((config) => {

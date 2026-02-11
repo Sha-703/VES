@@ -51,3 +51,33 @@ def auto_close_election(election):
         return True
     except Exception:
         return False
+
+
+def send_verification_email_async(voter_id, email, token):
+    """Envoie un email de vérification de manière asynchrone (en utilisant threading).
+    
+    Cette fonction envoie l'email dans un thread séparé pour ne pas bloquer 
+    la requête de connexion. Pour une vraie solution en production, utiliser Celery.
+    """
+    import threading
+    
+    def send_email():
+        try:
+            from django.core.mail import send_mail
+            from django.conf import settings
+            from elections_app.models import Voter
+            
+            # Recharger le voter pour s'assurer que le token est à jour
+            voter = Voter.objects.get(id=voter_id)
+            frontend_url = getattr(settings, 'FRONTEND_URL', 'https://vote-electronique-sur.onrender.com')
+            verify_link = f"{frontend_url}/voter/verify-email?token={token}&voter_id={voter.id}"
+            subject = "Vérification de votre email pour le vote électronique"
+            body = f"Bonjour,\n\nPour valider votre identité et accéder au vote, veuillez cliquer sur ce lien : {verify_link}\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez ce message."
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@ves')
+            send_mail(subject, body, from_email, [email], fail_silently=True)
+        except Exception:
+            # Ignorer les erreurs pour ne pas impacter l'utilisateur
+            pass
+    
+    thread = threading.Thread(target=send_email, daemon=True)
+    thread.start()

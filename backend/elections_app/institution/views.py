@@ -111,7 +111,7 @@ def institution_login(request):
 
     # Find institution by name (case-insensitive) and verify the related user's password
     try:
-        inst = Institution.objects.filter(name__iexact=institution_name).first()
+        inst = Institution.objects.select_related('user').filter(name__iexact=institution_name).first()
         if not inst:
             return Response({'detail': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
         user = inst.user
@@ -121,13 +121,16 @@ def institution_login(request):
         return Response({'detail': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
     
     token, _ = Token.objects.get_or_create(user=user)
-    institution = get_object_or_404(Institution, user=user)
     # Previously the system required email/SMS verification before login.
     # Verification has been disabled: allow login regardless of `is_verified`.
     return Response({
         'token': token.key,
         'user_id': user.id,
-        'institution': InstitutionSerializer(institution).data
+        'institution': {
+            'id': inst.id,
+            'name': inst.name,
+            'description': inst.description
+        }
     }, status=status.HTTP_200_OK)
 
 
