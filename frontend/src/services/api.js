@@ -113,6 +113,9 @@ export const getElectionTimeline = (id, { unit = 'minute', start = null, end = n
   return api.get(`/elections/${id}/timeline/`, { params });
 };
 
+export const getCandidateEvents = (electionId, limit = 50) =>
+  api.get(`/elections/${electionId}/candidate_events/`, { params: { limit } });
+
 export const advanceToRound2 = (electionId, { start = null, end = null, title = null, open_immediately = false, create_new_election = false, qualified_candidate_ids = null } = {}) =>
   api.post(`/elections/${electionId}/advance_to_round2/`, { start, end, title, open_immediately, create_new_election, qualified_candidate_ids });
 

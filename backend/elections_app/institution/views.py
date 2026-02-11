@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.files.base import ContentFile
 
-from elections_app.models import Election, Candidate, Vote, Voter, Institution, AuditLog
+from elections_app.models import Election, Candidate, Vote, Voter, Institution, AuditLog, CandidateEvent
 from elections_app.models import VoterImportFile
 from elections_app.utils import auto_close_election
 from elections_app.institution.serializers import (
@@ -880,6 +880,26 @@ class ElectionViewSet(viewsets.ModelViewSet):
 
         return Response({'timeline': out}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['get'], url_path='candidate_events')
+    def candidate_events(self, request, pk=None):
+        """Retourne les événements récents de création/modification de candidats pour l'élection."""
+        election = self.get_object()
+        limit = int(request.query_params.get('limit', 50))
+        events = CandidateEvent.objects.filter(election=election).order_by('-timestamp')[:limit]
+        
+        events_data = []
+        for event in events:
+            events_data.append({
+                'id': event.id,
+                'event_type': event.event_type,
+                'candidate_id': event.candidate_id,
+                'candidate_name': event.candidate_name,
+                'actor': event.actor,
+                'timestamp': event.timestamp.isoformat(),
+            })
+        
+        return Response({'events': events_data}, status=status.HTTP_200_OK)
+
 
 class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all()
@@ -895,7 +915,41 @@ class CandidateViewSet(viewsets.ModelViewSet):
         election_id = self.request.data.get('election')
         election = get_object_or_404(Election, id=election_id)
         serializer.save(election=election)
+        # Créer un événement de création de candidat
+        CandidateEvent.objects.create(
+            event_type='created',
+            candidate=serializer.instance,
+            election=election,
+            candidate_name=serializer.instance.name,
+            actor=self.request.user.username
+        )
         AuditLog.objects.create(action='candidate_added', actor=self.request.user.username, detail={'candidate_name': serializer.instance.name})
+
+    def perform_update(self, serializer):
+        serializer.save()
+        # Créer un événement de mise à jour de candidat
+        CandidateEvent.objects.create(
+            event_type='updated',
+            candidate=serializer.instance,
+            election=serializer.instance.election,
+            candidate_name=serializer.instance.name,
+            actor=self.request.user.username
+        )
+        AuditLog.objects.create(action='candidate_updated', actor=self.request.user.username, detail={'candidate_name': serializer.instance.name})
+
+    def perform_destroy(self, instance):
+        # Créer un événement de suppression avant de supprimer le candidat
+        election = instance.election
+        candidate_name = instance.name
+        CandidateEvent.objects.create(
+            event_type='deleted',
+            candidate=None,  # Le candidat va être supprimé
+            election=election,
+            candidate_name=candidate_name,
+            actor=self.request.user.username
+        )
+        AuditLog.objects.create(action='candidate_deleted', actor=self.request.user.username, detail={'candidate_name': candidate_name})
+        instance.delete()
 
 
 class VoterViewSet(viewsets.ModelViewSet):

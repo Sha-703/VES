@@ -164,6 +164,30 @@ class AuditLog(models.Model):
         return f"{self.action} @ {self.timestamp}"
 
 
+class CandidateEvent(models.Model):
+    """Enregistre les événements de création/modification de candidats pour affichage temps réel."""
+    event_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('created', 'Créé'),
+            ('updated', 'Mis à jour'),
+            ('deleted', 'Supprimé'),
+        ],
+        default='created'
+    )
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, null=True, blank=True, related_name='events')
+    election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='candidate_events')
+    candidate_name = models.CharField(max_length=200)
+    actor = models.CharField(max_length=200, blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.event_type} - {self.candidate_name} @ {self.timestamp}"
+
+
 class SMSVerification(models.Model):
     """Stocke les codes de vérification SMS pour les institutions."""
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='sms_verifications')
