@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.db.models import Q
 from django.contrib.auth.models import User
 
 
@@ -73,6 +74,9 @@ class Candidate(models.Model):
 class Voter(models.Model):
     """Représente un électeur éligible pour une institution."""
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='voters')
+    # Optionnel : un électeur peut être rattaché à une élection spécifique.
+    # Si `election` est non-null, l'électeur est considéré comme spécifique à cette élection.
+    election = models.ForeignKey('Election', null=True, blank=True, on_delete=models.SET_NULL, related_name='election_voters')
     identifier = models.CharField(max_length=200)  # ex : identifiant étudiant ou email
     name = models.CharField(max_length=200, blank=True)
     eligible = models.BooleanField(default=True)
@@ -82,15 +86,25 @@ class Voter(models.Model):
     email_verification_token = models.CharField(max_length=64, blank=True, null=True)
 
     class Meta:
-        unique_together = ('institution', 'identifier')  # Unicité par institution et identifiant
+        # Remplacer l'unicité par institution par des contraintes conditionnelles :
+        # - Si `election` est NULL => unicité par (institution, identifier)
+        # - Si `election` n'est pas NULL => unicité par (election, identifier)
+        constraints = [
+            models.UniqueConstraint(fields=['institution', 'identifier'], condition=Q(election__isnull=True), name='unique_institution_identifier_when_no_election'),
+            models.UniqueConstraint(fields=['election', 'identifier'], condition=Q(election__isnull=False), name='unique_election_identifier_when_election'),
+        ]
 
     def __str__(self):
+        if self.election:
+            return f"{self.identifier} ({self.election.title})"
         return f"{self.identifier} ({self.institution.name})"
 
 
 class VoterImportFile(models.Model):
     """Stocke les fichiers d'import d'électeurs pour chaque institution afin qu'elles puissent gérer leurs imports."""
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='import_files')
+    # Optionnel : l'import peut cibler une élection spécifique (pour créer des électeurs par élection)
+    election = models.ForeignKey('Election', null=True, blank=True, on_delete=models.SET_NULL, related_name='election_imports')
     file = models.FileField(upload_to='voter_imports/')
     uploaded_by = models.CharField(max_length=200, blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)

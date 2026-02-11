@@ -118,7 +118,7 @@ class ElectionSerializer(serializers.ModelSerializer):
 class VoterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voter
-        fields = ('id', 'identifier', 'name', 'eligible', 'created_at')
+        fields = ('id', 'identifier', 'name', 'eligible', 'election', 'created_at')
         read_only_fields = ('created_at',)
 
 

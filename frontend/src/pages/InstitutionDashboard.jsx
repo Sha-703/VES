@@ -118,6 +118,7 @@ export default function InstitutionDashboard() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedElectionId, setSelectedElectionId] = useState('');
   const [importLoading, setImportLoading] = useState(false);
   const [importResult, setImportResult] = useState(null);
   const [previewResult, setPreviewResult] = useState(null);
@@ -180,7 +181,7 @@ export default function InstitutionDashboard() {
     setSelectedFile(file);
     if (file) {
       // Appeler l'endpoint de prévisualisation pour obtenir les comptes
-      importVotersPreview(institution.id, file).then((resp) => {
+      importVotersPreview(institution.id, file, selectedElectionId).then((resp) => {
         setPreviewResult(resp.data);
       }).catch((err) => {
         // Ne pas bloquer la sélection en cas d'erreur de prévisualisation
@@ -199,7 +200,7 @@ export default function InstitutionDashboard() {
     setImportLoading(true);
     setError('');
     try {
-      const resp = await importVoters(institution.id, selectedFile);
+      const resp = await importVoters(institution.id, selectedFile, selectedElectionId);
       setImportResult(resp.data);
       // Recharger les données pour refléter les nouveaux votants créés : actualiser le résumé et les données complètes
       try {
@@ -348,6 +349,17 @@ export default function InstitutionDashboard() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Sélecteur d'élection pour ciblage de l'import */}
+      <div style={{ width: '100%', padding: '12px', boxSizing: 'border-box', marginTop: 6 }}>
+        <label style={{ fontSize: 13, color: '#374151', marginBottom: 6 }}>Importer dans l'élection :</label>
+        <select value={selectedElectionId} onChange={(e) => setSelectedElectionId(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #ddd', minWidth: 280 }}>
+          <option value="">Aucun — importer au niveau de l'institution</option>
+          {elections.map((el) => (
+            <option key={el.id} value={el.id}>{el.title}</option>
+          ))}
+        </select>
       </div>
 
       {/* Carte d'import (sous les élections) */}

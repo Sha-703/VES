@@ -204,16 +204,22 @@ export const deleteVoter = (id) =>
   api.delete(`/voters/${id}/`);
 
 // Importation des électeurs (CSV / XLSX) pour une institution
-export const importVoters = (institutionId, file) => {
+export const importVoters = (institutionId, file, electionId = null) => {
   const form = new FormData();
   form.append('file', file);
+  if (electionId !== null && electionId !== undefined && electionId !== '') {
+    form.append('election', electionId);
+  }
   // Laisse axios définir automatiquement le Content-Type (incluant le boundary).
   return api.post(`/institutions/${institutionId}/import_voters/`, form);
 };
 
-export const importVotersPreview = (institutionId, file) => {
+export const importVotersPreview = (institutionId, file, electionId = null) => {
   const form = new FormData();
   form.append('file', file);
+  if (electionId !== null && electionId !== undefined && electionId !== '') {
+    form.append('election', electionId);
+  }
   // Passe le paramètre preview pour que le backend analyse sans persister
   return api.post(`/institutions/${institutionId}/import_voters/?preview=true`, form);
 };

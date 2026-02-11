@@ -288,27 +288,42 @@ class InstitutionViewSet(viewsets.ModelViewSet):
         if is_preview:
             return Response({'total_rows': total_rows, 'eligible': eligible_ok, 'invalid': invalid}, status=status.HTTP_200_OK)
 
-        # Enregistrer le fichier importé
+        # Si un paramètre `election` est fourni, importer ces électeurs pour l'élection spécifiée
+        election_id = request.data.get('election') or request.query_params.get('election')
+        election = None
+        if election_id:
+            try:
+                election = Election.objects.get(id=election_id, institution=institution)
+            except Election.DoesNotExist:
+                return Response({'detail': 'Election not found for this institution.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Enregistrer le fichier importé (associer l'import à l'institution et éventuellement à l'élection)
         try:
             from django.core.files.base import ContentFile
-            imp = VoterImportFile.objects.create(
-                institution=institution,
-                file=ContentFile(raw, name=f.name),
-                uploaded_by=request.user.username if getattr(request.user, 'username', None) else None,
-                total_rows=total_rows,
-            )
+            imp_kwargs = {'institution': institution, 'file': ContentFile(raw, name=f.name), 'uploaded_by': request.user.username if getattr(request.user, 'username', None) else None, 'total_rows': total_rows}
+            if election:
+                imp_kwargs['election'] = election
+            imp = VoterImportFile.objects.create(**imp_kwargs)
         except Exception as e:
             return Response({'detail': f'Error saving import file: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Créer ou mettre à jour les électeurs
+        # Créer ou mettre à jour les électeurs (soit au niveau de l'institution, soit attachés à l'élection)
         try:
             with transaction.atomic():
                 for r in parsed_rows:
-                    obj, created_flag = Voter.objects.update_or_create(
-                        institution=institution,
-                        identifier=r['identifier'],
-                        defaults={'name': r['name'], 'eligible': r['eligible'], 'import_file': imp},
-                    )
+                    if election:
+                        obj, created_flag = Voter.objects.update_or_create(
+                            election=election,
+                            identifier=r['identifier'],
+                            defaults={'name': r['name'], 'eligible': r['eligible'], 'import_file': imp, 'institution': institution},
+                        )
+                    else:
+                        obj, created_flag = Voter.objects.update_or_create(
+                            institution=institution,
+                            identifier=r['identifier'],
+                            defaults={'name': r['name'], 'eligible': r['eligible'], 'import_file': imp},
+                        )
+
                     if created_flag:
                         created += 1
                     else:
@@ -317,11 +332,11 @@ class InstitutionViewSet(viewsets.ModelViewSet):
                 imp.created = created
                 imp.updated = updated
                 imp.save()
-                AuditLog.objects.create(action='voters_imported', actor=request.user.username, detail={'institution_id': institution.id, 'created': created, 'updated': updated, 'total_rows': total_rows})
+                AuditLog.objects.create(action='voters_imported', actor=request.user.username, detail={'institution_id': institution.id, 'created': created, 'updated': updated, 'total_rows': total_rows, 'election_id': getattr(election, 'id', None)})
         except Exception as e:
             return Response({'detail': f'Error importing voters: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response({'created': created, 'updated': updated, 'total_rows': total_rows}, status=status.HTTP_200_OK)
+        return Response({'created': created, 'updated': updated, 'total_rows': total_rows, 'election_id': getattr(election, 'id', None)}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_path='imports/delete')
     def delete_import_file(self, request, pk=None):
