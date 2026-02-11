@@ -240,4 +240,4 @@ export const checkHasVoted = (voter_id, election_id) =>
   api.get('/votes/has_voted/', { params: { voter_id, election_id } });
 
 export default api;
-export { API_BASE, API_HOST };
+export { API_BASE };
