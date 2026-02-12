@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getElection, addCandidate, updateCandidate, deleteCandidate, getCandidateEvents } from '../services/api';
+import { getElection, addCandidate, updateCandidate, deleteCandidate } from '../services/api';
 import { CandidateCard, CandidateForm, Alert, Modal, Pagination } from '../components/FormComponents';
 
 export default function ManageCandidates() {
@@ -13,8 +13,6 @@ export default function ManageCandidates() {
   const [filters, setFilters] = useState({}); // { electionId: { recherche: '', page: 1 } }
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [candidateToDelete, setCandidateToDelete] = useState(null);
-  const [candidateEvents, setCandidateEvents] = useState([]);
-  const [showEvents, setShowEvents] = useState(true);
   const PAGE_SIZE = 5;
   const confirmRef = React.useRef(null);
 
@@ -23,24 +21,6 @@ export default function ManageCandidates() {
     if (!token) return navigate('/');
     loadElection();
   }, []);
-
-  // Charger les événements de candidats périodiquement
-  useEffect(() => {
-    if (!electionId) return;
-    
-    const loadEvents = async () => {
-      try {
-        const resp = await getCandidateEvents(electionId, 10);
-        setCandidateEvents(resp.data.events || []);
-      } catch (err) {
-        // Silently ignore errors on event loading
-      }
-    };
-
-    loadEvents();
-    const interval = setInterval(loadEvents, 2000); // Charger les événements toutes les 2 secondes
-    return () => clearInterval(interval);
-  }, [electionId]);
 
   const loadElection = async () => {
     try {
@@ -54,10 +34,6 @@ export default function ManageCandidates() {
   const handleAdd = async (form, electionIdParam) => {
     try {
       await addCandidate(electionIdParam, form.name, form.bio, form.position, form.photo);
-      // Recharger les événements immédiatement après la création
-      setTimeout(() => {
-        getCandidateEvents(electionId, 10).then(resp => setCandidateEvents(resp.data.events || [])).catch(() => {});
-      }, 500);
       await loadElection();
     } catch (err) {
       setError('Erreur lors de l\'ajout du candidat');
@@ -68,10 +44,6 @@ export default function ManageCandidates() {
     try {
       await updateCandidate(editingCandidate.id, { name: form.name, bio: form.bio, position: form.position, photo: form.photo });
       setEditingCandidate(null);
-      // Recharger les événements immédiatement après la mise à jour
-      setTimeout(() => {
-        getCandidateEvents(electionId, 10).then(resp => setCandidateEvents(resp.data.events || [])).catch(() => {});
-      }, 500);
       await loadElection();
     } catch (err) {
       setError('Erreur lors de la mise à jour');
@@ -90,10 +62,6 @@ export default function ManageCandidates() {
       await deleteCandidate(candidateToDelete.id);
       setConfirmOpen(false);
       setCandidateToDelete(null);
-      // Recharger les événements immédiatement après la suppression
-      setTimeout(() => {
-        getCandidateEvents(electionId, 10).then(resp => setCandidateEvents(resp.data.events || [])).catch(() => {});
-      }, 500);
       await loadElection();
     } catch (err) {
       setError('Erreur lors de la suppression');
@@ -124,35 +92,6 @@ export default function ManageCandidates() {
       <p style={{ color: '#666' }}>{election.description}</p>
 
       {error && <Alert type="error">{error}</Alert>}
-
-      {/* Panneau d'événements et notifications */}
-      {candidateEvents.length > 0 && (
-        <div className="card" style={{ padding: 12, marginTop: 12, background: '#f0f9ff', border: '1px solid #bfdbfe' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1e40af' }}>📋 Événements récents</h4>
-            <button 
-              onClick={() => setShowEvents(!showEvents)} 
-              style={{ background: 'none', border: 'none', color: '#1e40af', cursor: 'pointer', fontSize: 12 }}
-            >
-              {showEvents ? 'Masquer' : 'Afficher'}
-            </button>
-          </div>
-          {showEvents && (
-            <div style={{ maxHeight: 200, overflowY: 'auto', fontSize: 12 }}>
-              {candidateEvents.map((event) => (
-                <div key={event.id} style={{ padding: '6px 0', borderBottom: '1px solid #dbeafe', color: '#374151' }}>
-                  <span style={{ color: '#1e40af', fontWeight: 600 }}>
-                    {event.event_type === 'created' && '✅ Créé'}
-                    {event.event_type === 'updated' && '✏️ Mis à jour'}
-                    {event.event_type === 'deleted' && '❌ Supprimé'}
-                  </span>
-                  {' '}<strong>{event.candidate_name}</strong> — {event.actor || 'système'} — {new Date(event.timestamp).toLocaleTimeString()}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       <div className="card" style={{ padding: 16, marginTop: 18 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
