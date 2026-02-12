@@ -86,9 +86,9 @@ export function Footer() {
   );
 }
 
-export function CandidateCard({ candidate, onEdit, onDelete }) {
+export function CandidateCard({ candidate, onEdit, onDelete, isLoading }) {
   return (
-    <div className="candidate-card" style={{ display: 'flex', gap: 12, alignItems: 'center', padding: 12, borderRadius: 8, border: '1px solid var(--muted)', background: 'var(--card-bg)' }}>
+    <div className="candidate-card" style={{ display: 'flex', gap: 12, alignItems: 'center', padding: 12, borderRadius: 8, border: '1px solid var(--muted)', background: 'var(--card-bg)', opacity: isLoading ? 0.6 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}>
       {candidate.photo ? (
         <img src={candidate.photo} alt={candidate.name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />
       ) : (
@@ -101,8 +101,8 @@ export function CandidateCard({ candidate, onEdit, onDelete }) {
             {candidate.position && <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>{candidate.position}</div>}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn-secondary" onClick={() => onEdit(candidate)} style={{ padding: '6px 8px' }}>✏️</button>
-            <button className="btn-danger" onClick={() => onDelete(candidate)} style={{ padding: '6px 8px' }}>🗑️</button>
+            <button className="btn-secondary" onClick={() => onEdit(candidate)} style={{ padding: '6px 8px' }} disabled={isLoading}>✏️</button>
+            <button className="btn-danger" onClick={() => onDelete(candidate)} style={{ padding: '6px 8px' }} disabled={isLoading}>🗑️</button>
           </div>
         </div>
         {candidate.bio && <div style={{ marginTop: 8, color: 'var(--muted)', fontSize: '0.9rem' }}>{candidate.bio}</div>}
@@ -111,7 +111,7 @@ export function CandidateCard({ candidate, onEdit, onDelete }) {
   );
 }
 
-export function CandidateForm({ initial = {}, onSubmit, onCancel, submitText = 'Enregistrer' }) {
+export function CandidateForm({ initial = {}, onSubmit, onCancel, submitText = 'Enregistrer', isLoading = false }) {
   const [form, setForm] = React.useState({ name: initial.name || '', position: initial.position || '', bio: initial.bio || '', photo: null });
   const [preview, setPreview] = React.useState(initial.photo || null);
 
@@ -130,6 +130,7 @@ export function CandidateForm({ initial = {}, onSubmit, onCancel, submitText = '
     <form
       onSubmit={(e) => {
         e.preventDefault();
+        if (isLoading) return; // Ne pas soumettre si déjà en cours
         // Prend en charge les handlers asynchrones : attend la complétion puis réinitialise le formulaire
         const r = onSubmit(form);
         if (r && typeof r.then === 'function') {
@@ -145,18 +146,18 @@ export function CandidateForm({ initial = {}, onSubmit, onCancel, submitText = '
           setPreview(null);
         }
       }}
-      style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+      style={{ display: 'flex', flexDirection: 'column', gap: 8, opacity: isLoading ? 0.6 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}
     >
-      <input placeholder="Nom complet" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-      <input placeholder="Poste (ex : Président)" value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} />
-      <textarea placeholder="Brève description" rows={3} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} />
+      <input placeholder="Nom complet" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required disabled={isLoading} />
+      <input placeholder="Poste (ex : Président)" value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} disabled={isLoading} />
+      <textarea placeholder="Brève description" rows={3} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} disabled={isLoading} />
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <input type="file" accept="image/*" onChange={handleFile} />
+        <input type="file" accept="image/*" onChange={handleFile} disabled={isLoading} />
         {preview && <img src={preview} alt="aperçu" style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 6 }} />}
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button type="submit" className="btn-primary">{submitText}</button>
-        <button type="button" className="btn-secondary" onClick={onCancel}>Annuler</button>
+        <button type="submit" className="btn-primary" disabled={isLoading}>{isLoading ? 'En cours...' : submitText}</button>
+        <button type="button" className="btn-secondary" onClick={onCancel} disabled={isLoading}>Annuler</button>
       </div>
     </form>
   );
@@ -218,18 +219,18 @@ export function Modal({ title, children, onClose, open = false, initialFocusRef 
   );
 }
 
-export function Pagination({ total = 0, page = 1, pageSize = 10, onPage }) {
+export function Pagination({ total = 0, page = 1, pageSize = 10, onPage, disabled = false }) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (pages <= 1) return null;
   const items = [];
   for (let i = 1; i <= pages; i++) items.push(i);
   return (
     <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 12 }}>
-      <button className="btn-secondary" disabled={page === 1} onClick={() => onPage(page - 1)}>◀</button>
+      <button className="btn-secondary" disabled={page === 1 || disabled} onClick={() => onPage(page - 1)}>◀</button>
       {items.map((p) => (
-        <button key={p} className={`btn-small ${p === page ? 'btn-primary' : ''}`} onClick={() => onPage(p)} style={{ minWidth: 38 }}>{p}</button>
+        <button key={p} className={`btn-small ${p === page ? 'btn-primary' : ''}`} onClick={() => onPage(p)} style={{ minWidth: 38 }} disabled={disabled}>{p}</button>
       ))}
-      <button className="btn-secondary" disabled={page === pages} onClick={() => onPage(page + 1)}>▶</button>
+      <button className="btn-secondary" disabled={page === pages || disabled} onClick={() => onPage(page + 1)}>▶</button>
     </div>
   );
 }
