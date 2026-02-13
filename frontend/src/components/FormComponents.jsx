@@ -114,16 +114,74 @@ export function CandidateCard({ candidate, onEdit, onDelete, isLoading }) {
 export function CandidateForm({ initial = {}, onSubmit, onCancel, submitText = 'Enregistrer', isLoading = false }) {
   const [form, setForm] = React.useState({ name: initial.name || '', position: initial.position || '', bio: initial.bio || '', photo: null });
   const [preview, setPreview] = React.useState(initial.photo || null);
+  const fileInputRef = React.useRef(null);
+  const previewUrlRef = React.useRef(null);
 
   React.useEffect(() => {
     setForm({ name: initial.name || '', position: initial.position || '', bio: initial.bio || '', photo: null });
     setPreview(initial.photo || null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   }, [initial]);
+
+  // Nettoyer les blob URLs pour éviter les fuites mémoire
+  React.useEffect(() => {
+    return () => {
+      if (previewUrlRef.current && previewUrlRef.current.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+    };
+  }, []);
 
   const handleFile = (e) => {
     const file = e.target.files?.[0] || null;
+    if (!file) return;
+
+    // Vérifier la taille du fichier (5 MB max)
+    const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+    if (file.size > MAX_SIZE) {
+      alert(`❌ La photo est trop volumineuse (${(file.size / 1024 / 1024).toFixed(1)} MB).\nTaille maximale : 5 MB`);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Vérifier le type MIME
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('❌ Format non supporté.\nFormats acceptés : JPEG, PNG, WebP, GIF');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
     setForm((s) => ({ ...s, photo: file }));
-    if (file) setPreview(URL.createObjectURL(file));
+    if (file) {
+      // Révoquer l'ancienne URL blob si elle existe
+      if (previewUrlRef.current && previewUrlRef.current.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+      const newPreviewUrl = URL.createObjectURL(file);
+      previewUrlRef.current = newPreviewUrl;
+      setPreview(newPreviewUrl);
+    }
+  };
+
+  const resetForm = () => {
+    setForm({ name: '', position: '', bio: '', photo: null });
+    setPreview(null);
+    // Réinitialiser le champ file directement
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    // Révoquer l'URL blob
+    if (previewUrlRef.current && previewUrlRef.current.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
   };
 
   return (
@@ -135,15 +193,13 @@ export function CandidateForm({ initial = {}, onSubmit, onCancel, submitText = '
         const r = onSubmit(form);
         if (r && typeof r.then === 'function') {
           r.then(() => {
-            setForm({ name: '', position: '', bio: '', photo: null });
-            setPreview(null);
+            resetForm();
           }).catch(() => {
             // Ignorer, le parent affiche les erreurs
           });
         } else {
           // Handler synchrone : réinitialiser immédiatement
-          setForm({ name: '', position: '', bio: '', photo: null });
-          setPreview(null);
+          resetForm();
         }
       }}
       style={{ display: 'flex', flexDirection: 'column', gap: 8, opacity: isLoading ? 0.6 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}
@@ -151,9 +207,24 @@ export function CandidateForm({ initial = {}, onSubmit, onCancel, submitText = '
       <input placeholder="Nom complet" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required disabled={isLoading} />
       <input placeholder="Poste (ex : Président)" value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} disabled={isLoading} />
       <textarea placeholder="Brève description" rows={3} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} disabled={isLoading} />
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <input type="file" accept="image/*" onChange={handleFile} disabled={isLoading} />
-        {preview && <img src={preview} alt="aperçu" style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 6 }} />}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <input 
+          ref={fileInputRef} 
+          type="file" 
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif" 
+          onChange={handleFile} 
+          disabled={isLoading}
+          title="Formats acceptés : JPEG, PNG, WebP, GIF. Taille maximale : 5 MB"
+          style={{ flex: 1, minWidth: '200px' }}
+        />
+        {preview && (
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <img src={preview} alt="aperçu" style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 6 }} />
+          </div>
+        )}
+      </div>
+      <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '-4px' }}>
+        📸 Formats autorisés : JPEG, PNG, WebP, GIF • Taille max : 5 MB
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <button type="submit" className="btn-primary" disabled={isLoading}>{isLoading ? 'En cours...' : submitText}</button>

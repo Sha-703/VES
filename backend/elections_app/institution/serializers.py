@@ -91,6 +91,22 @@ class ElectionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'end': 'La date de fin doit être postérieure à la date de début.'})
         return data
 
+    def to_representation(self, instance):
+        """Override to ensure context is passed to nested candidate serializers."""
+        ret = super().to_representation(instance)
+        # Explicitly pass context to candidates serializer (DRF doesn't do this automatically)
+        candidates_serializer = CandidateSerializer(
+            instance.candidates.all(),
+            many=True,
+            context=self.context
+        )
+        ret['candidates'] = candidates_serializer.data
+        # Also pass context to finalized_winner
+        if instance.finalized_winner:
+            winner_serializer = CandidateSerializer(instance.finalized_winner, context=self.context)
+            ret['finalized_winner'] = winner_serializer.data
+        return ret
+
     def get_voted_voters_count(self, obj):
         try:
             # compter les électeurs distincts ayant au moins un vote pour cette élection
