@@ -37,10 +37,17 @@ export default function ManageCandidates() {
     try {
       setIsLoading(true);
       setLoadingMessage('Ajout du candidat en cours...');
+      console.log('Form before sending:', form); // DEBUG
+      console.log('Form.photo type:', form.photo?.constructor?.name, 'size:', form.photo?.size); // DEBUG
       const resp = await addCandidate(electionIdParam, form.name, form.bio, form.position, form.photo);
+      console.log('Response from addCandidate:', resp.data); // DEBUG
+      console.log('Response.photo value:', resp.data?.photo); // DEBUG
+      console.log('Response.photo type:', typeof resp.data?.photo); // DEBUG
       // Ajouter le candidat au frontend sans recharger l'élection entière
       if (resp.data && election) {
         const newCandidate = resp.data;
+        console.log('New candidate:', newCandidate); // DEBUG
+        console.log('New candidate photo:', newCandidate.photo); // DEBUG
         setElection((prev) => ({
           ...prev,
           candidates: [...(prev.candidates || []), newCandidate]
@@ -51,6 +58,8 @@ export default function ManageCandidates() {
       }
       setLoadingMessage('');
     } catch (err) {
+      console.error('Error adding candidate:', err); // DEBUG
+      console.error('Error response:', err.response?.data); // DEBUG
       setError('Erreur lors de l\'ajout du candidat');
       setLoadingMessage('');
     } finally {

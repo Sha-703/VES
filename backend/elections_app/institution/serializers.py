@@ -41,16 +41,15 @@ class InstitutionRegisterSerializer(serializers.Serializer):
 
 class CandidateSerializer(serializers.ModelSerializer):
     vote_count = serializers.SerializerMethodField()
-    photo = serializers.SerializerMethodField()
-
+    
     class Meta:
         model = Candidate
-        # exposer le champ photo pour permettre l'upload via l'API
+        # Exposer le champ photo pour permettre l'upload via l'API
         fields = ('id', 'name', 'bio', 'position', 'photo', 'vote_count', 'election', 'created_at')
         read_only_fields = ('created_at',)
 
     def get_photo(self, obj):
-        """Retourne l'URL absolue de la photo."""
+        """Retourne l'URL absolue de la photo une fois retournée."""
         if not obj.photo:
             return None
         request = self.context.get('request')
@@ -62,6 +61,12 @@ class CandidateSerializer(serializers.ModelSerializer):
 
     def get_vote_count(self, obj):
         return obj.votes.count()
+
+    def to_representation(self, instance):
+        """Override to use get_photo for the response."""
+        ret = super().to_representation(instance)
+        ret['photo'] = self.get_photo(instance)
+        return ret
 
 
 # Ballot model removed; vote-related per-election fields are computed on Election
