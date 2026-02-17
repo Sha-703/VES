@@ -1,5 +1,6 @@
 import React from 'react';
 import logo from '../assets/logo-white.svg';
+import { API_HOST } from '../services/api';
 
 export function FormField({ label, type = 'text', name, value, onChange, required = false, rows = null, ...props }) {
   return (
@@ -90,7 +91,7 @@ export function CandidateCard({ candidate, onEdit, onDelete, isLoading }) {
   return (
     <div className="candidate-card" style={{ display: 'flex', gap: 12, alignItems: 'center', padding: 12, borderRadius: 8, border: '1px solid var(--muted)', background: 'var(--card-bg)', opacity: isLoading ? 0.6 : 1, pointerEvents: isLoading ? 'none' : 'auto' }}>
       {candidate.photo ? (
-        <img src={candidate.photo} alt={candidate.name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />
+        <img src={candidate.photo.startsWith('http') || candidate.photo.startsWith('blob:') ? candidate.photo : `${API_HOST}${candidate.photo}`} alt={candidate.name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />
       ) : (
         <div style={{ width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: 'rgba(0,0,0,0.05)' }}>📷</div>
       )}
@@ -219,7 +220,7 @@ export function CandidateForm({ initial = {}, onSubmit, onCancel, submitText = '
         />
         {preview && (
           <div style={{ position: 'relative', display: 'inline-block' }}>
-            <img src={preview} alt="aperçu" style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 6 }} />
+            <img src={preview.startsWith('http') || preview.startsWith('blob:') ? preview : `${API_HOST}${preview}`} alt="aperçu" style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 6 }} />
           </div>
         )}
       </div>

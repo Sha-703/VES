@@ -41,6 +41,7 @@ class InstitutionRegisterSerializer(serializers.Serializer):
 
 class CandidateSerializer(serializers.ModelSerializer):
     vote_count = serializers.SerializerMethodField()
+    photo = serializers.SerializerMethodField()
     
     class Meta:
         model = Candidate
@@ -61,12 +62,6 @@ class CandidateSerializer(serializers.ModelSerializer):
 
     def get_vote_count(self, obj):
         return obj.votes.count()
-
-    def to_representation(self, instance):
-        """Override to use get_photo for the response."""
-        ret = super().to_representation(instance)
-        ret['photo'] = self.get_photo(instance)
-        return ret
 
 
 # Ballot model removed; vote-related per-election fields are computed on Election

@@ -2,11 +2,12 @@
 
 import os
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.defaults import page_not_found
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
+from django.views.static import serve as static_serve
 
 
 from django.shortcuts import redirect
@@ -54,15 +55,43 @@ def custom_home(request):
         return HttpResponse(html)
 
 
+def serve_media(request, path):
+    """Serve media files even in production (DEBUG=False)."""
+    from django.core.wsgi import get_wsgi_application
+    from pathlib import Path
+    
+    file_path = Path(settings.MEDIA_ROOT) / path
+    
+    # Security check: prevent directory traversal attacks
+    try:
+        file_path = file_path.resolve()
+        if not str(file_path).startswith(str(Path(settings.MEDIA_ROOT).resolve())):
+            from django.http import Http404
+            raise Http404("File not found")
+    except Exception:
+        from django.http import Http404
+        raise Http404("File not found")
+    
+    # Check if file exists
+    if not file_path.exists() or not file_path.is_file():
+        from django.http import Http404
+        raise Http404("File not found")
+    
+    # Serve the file
+    return FileResponse(file_path.open('rb'), as_attachment=False)
+
+
 urlpatterns = [
     path('', custom_home),
     path('admin/', admin.site.urls),
     path('api/', include('elections_app.urls')),
+    # Serve media files even in production (DEBUG=False)
+    re_path(r'^media/(?P<path>.*)$', serve_media),
 ]
 
-# Servir les fichiers médias (photos, candidats, etc.) en développement et production
-# En production avec Render/gunicorn, WhiteNoise gère également les fichiers médias
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+# For development (DEBUG=True), also add the standard static() serving
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 handler404 = 'elections_project.urls.custom_404'

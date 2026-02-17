@@ -130,7 +130,7 @@ export default function VoteElection() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 {candidate.photo && (
-                  <img src={candidate.photo.startsWith('http') ? candidate.photo : `${API_HOST}${candidate.photo}`} alt={candidate.name} style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8 }} />
+                  <img src={candidate.photo.startsWith('http') || candidate.photo.startsWith('blob:') ? candidate.photo : `${API_HOST}${candidate.photo}`} alt={candidate.name} style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8 }} />
                 )}
                 <div style={{ flex: 1 }}>
                   <h3 style={{ margin: 0 }}>{candidate.name}</h3>
