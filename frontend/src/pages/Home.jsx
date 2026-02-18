@@ -10,7 +10,7 @@ export default function Home() {
       <div style={{
         background: 'linear-gradient(135deg, #007bff, #0056b3)',
         color: 'white',
-        padding: '80px 20px',
+        padding: 'clamp(40px, 10vw, 80px) 20px',
         textAlign: 'center',
         marginBottom: '40px',
         position: 'relative',
@@ -20,12 +20,12 @@ export default function Home() {
         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.28)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }} />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '14px 22px', borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', boxShadow: '0 6px 20px rgba(2,6,23,0.12)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ textAlign: 'left' }}>
-              <h1 style={{ color: 'white', marginBottom: '6px', fontSize: '2.4rem' }}>
+          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '14px 22px', borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', boxShadow: '0 6px 20px rgba(2,6,23,0.12)', border: '1px solid rgba(255,255,255,0.06)', maxWidth: '100%' }}>
+            <div style={{ textAlign: 'center' }}>
+              <h1 style={{ color: 'white', marginBottom: '6px', fontSize: 'clamp(1.5rem, 5vw, 2.4rem)' }}>
                 VES — Vote Électronique Sûr
               </h1>
-              <p style={{ fontSize: '1.05rem', margin: 0, opacity: 0.95, color: 'black', fontWeight: 700 }}>
+              <p style={{ fontSize: 'clamp(0.9rem, 3vw, 1.05rem)', margin: 0, opacity: 0.95, color: 'white', fontWeight: 700 }}>
                 Plateforme moderne pour organiser et gérer des élections en ligne
               </p>
             </div>
@@ -61,13 +61,13 @@ export default function Home() {
 
         <div className="card">
           <h2>✨ Fonctionnalités</h2>
-          <ul style={{ listStyle: 'none', columns: 2, columnGap: '40px' }}>
-            <li style={{ paddingBottom: '16px' }}>✓ Création d'élections simplifiée</li>
-            <li style={{ paddingBottom: '16px' }}>✓ Gestion des candidats et votants</li>
-            <li style={{ paddingBottom: '16px' }}>✓ Bulletin de vote sécurisé</li>
-            <li style={{ paddingBottom: '16px' }}>✓ Résultats en temps réel</li>
-            <li style={{ paddingBottom: '16px' }}>✓ Audit et traçabilité complets</li>
-            <li style={{ paddingBottom: '16px' }}>✓ Interface intuitive et mobile-friendly</li>
+          <ul style={{ listStyle: 'none', columns: 'auto', columnWidth: '300px', columnGap: '40px', gap: '16px' }}>
+            <li style={{ paddingBottom: '16px', breakInside: 'avoid' }}>✓ Création d'élections simplifiée</li>
+            <li style={{ paddingBottom: '16px', breakInside: 'avoid' }}>✓ Gestion des candidats et votants</li>
+            <li style={{ paddingBottom: '16px', breakInside: 'avoid' }}>✓ Bulletin de vote sécurisé</li>
+            <li style={{ paddingBottom: '16px', breakInside: 'avoid' }}>✓ Résultats en temps réel</li>
+            <li style={{ paddingBottom: '16px', breakInside: 'avoid' }}>✓ Audit et traçabilité complets</li>
+            <li style={{ paddingBottom: '16px', breakInside: 'avoid' }}>✓ Interface intuitive et mobile-friendly</li>
           </ul>
         </div>
       </div>

@@ -162,6 +162,16 @@ textarea {
   flex-direction: column;
 }
 
+.form-container {
+  background-color: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
 
 /* ============ Buttons ============ */
 button, .button {
@@ -365,6 +375,14 @@ button:disabled, .button:disabled {
   margin: 0;
 }
 
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 /* ============ Tabs ============ */
 .tabs {
   display: flex;
@@ -392,7 +410,43 @@ button:disabled, .button:disabled {
 }
 
 /* ============ Responsive ============ */
+@media (max-width: 1024px) {
+  h1 {
+    font-size: 2rem;
+  }
+  h2 {
+    font-size: 1.6rem;
+  }
+  h3 {
+    font-size: 1.3rem;
+  }
+  .container {
+    padding: 0 16px;
+  }
+  .card {
+    padding: 18px;
+  }
+  .modal-window {
+    padding: 16px;
+  }
+}
+
 @media (max-width: 768px) {
+  h1 {
+    font-size: 1.75rem;
+  }
+  h2 {
+    font-size: 1.4rem;
+  }
+  h3 {
+    font-size: 1.1rem;
+  }
+  
+  .form-container {
+    padding: 24px;
+    border-radius: 8px;
+  }
+  
   .flex-between {
     flex-direction: column;
     align-items: flex-start;
@@ -404,6 +458,114 @@ button:disabled, .button:disabled {
 
   .grid {
     grid-template-columns: 1fr;
+  }
+  
+  .container {
+    padding: 0 12px;
+  }
+  
+  .card {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .modal-window {
+    width: 95vw !important;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  
+  .header {
+    padding: 16px 0;
+    margin-bottom: 24px;
+  }
+  
+  .header h1 {
+    font-size: 1.5rem;
+  }
+  
+  /* Voter election/ballot cards - stack on mobile */
+  .voter-elections-grid, .voter-ballots-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .voter-election-card, .voter-ballot-card {
+    padding: 12px !important;
+  }
+  
+  .voter-election-header, .voter-ballot-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .voter-election-meta, .voter-ballot-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .voter-election-cta, .voter-ballot-cta {
+    justify-content: flex-start;
+    margin-top: 12px;
+  }
+  
+  input, textarea, select {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  .tabs {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .tab {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+  h2 {
+    font-size: 1.2rem;
+  }
+  h3 {
+    font-size: 1rem;
+  }
+  
+  .container {
+    padding: 0 8px;
+  }
+  
+  .card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  button, .button {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .btn-small {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  
+  .flex-center {
+    padding: 20px;
+  }
+  
+  .voter-election-card, .voter-ballot-card {
+    padding: 10px !important;
+  }
+  
+  .badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
   }
 }
 

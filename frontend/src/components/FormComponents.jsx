@@ -33,16 +33,9 @@ export function FormField({ label, type = 'text', name, value, onChange, require
 
 export function FormContainer({ children, title, onSubmit, submitText = 'Soumettre', loading = false }) {
   return (
-    <div className="flex-center">
-      <div style={{
-        backgroundColor: 'white',
-        padding: '40px',
-        borderRadius: '8px',
-        boxShadow: 'var(--shadow-lg)',
-        width: '100%',
-        maxWidth: '500px',
-      }}>
-        {title && <h2>{title}</h2>}
+    <div className="flex-center" style={{ minHeight: '100vh', padding: '20px' }}>
+      <div className="form-container">
+        {title && <h2 style={{ marginTop: 0 }}>{title}</h2>}
         <form onSubmit={onSubmit}>
           {children}
           <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', marginTop: '20px' }}>

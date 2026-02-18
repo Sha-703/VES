@@ -82,11 +82,11 @@ export default function VoterElections() {
   return (
     <div>
       <div className="header" style={{ padding: '20px 0' }}>
-        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ margin: 0 }}>Scrutins disponibles</h1>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <span style={{ fontWeight: 'bold' }}>Connecté : {voterName}</span>
-            <button onClick={handleLogout} className="btn-danger">
+        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <h1 style={{ margin: 0, minWidth: '200px' }}>Scrutins disponibles</h1>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>Connecté : {voterName}</span>
+            <button onClick={handleLogout} className="btn-danger" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
               Déconnexion
             </button>
           </div>

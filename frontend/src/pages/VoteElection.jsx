@@ -105,7 +105,7 @@ export default function VoteElection() {
         <h2>🗳️ Sélectionnez votre candidat</h2>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '12px',
           marginTop: '20px'
         }}>
@@ -125,16 +125,16 @@ export default function VoteElection() {
                 borderRadius: '8px',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
-                minHeight: '110px'
+                minHeight: 'auto'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
                 {candidate.photo && (
-                  <img src={candidate.photo.startsWith('http') || candidate.photo.startsWith('blob:') ? candidate.photo : `${API_HOST}${candidate.photo}`} alt={candidate.name} style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8 }} />
+                  <img src={candidate.photo.startsWith('http') || candidate.photo.startsWith('blob:') ? candidate.photo : `${API_HOST}${candidate.photo}`} alt={candidate.name} style={{ width: '100%', maxWidth: '64px', height: '64px', objectFit: 'cover', borderRadius: 8 }} />
                 )}
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: 0 }}>{candidate.name}</h3>
-                  {candidate.position && <p style={{ margin: '6px 0 0 0', fontSize: '0.9rem', fontWeight: 500 }}>{candidate.position}</p>}
+                  <h3 style={{ margin: '4px 0', fontSize: '1rem' }}>{candidate.name}</h3>
+                  {candidate.position && <p style={{ margin: '4px 0', fontSize: '0.85rem', fontWeight: 500 }}>{candidate.position}</p>}
                 </div>
                 <input
                   type="radio"
@@ -142,10 +142,10 @@ export default function VoteElection() {
                   value={candidate.id}
                   checked={selectedCandidate === candidate.id}
                   onChange={() => setSelectedCandidate(candidate.id)}
-                  style={{ marginLeft: '8px', cursor: 'pointer' }}
+                  style={{ marginTop: '4px', cursor: 'pointer' }}
                 />
               </div>
-              {candidate.bio && <p style={{ marginTop: '8px', fontSize: '0.85rem', color: '#666' }}>{candidate.bio}</p>}
+              {candidate.bio && <p style={{ marginTop: '8px', fontSize: '0.8rem', color: '#666', lineHeight: '1.4' }}>{candidate.bio}</p>}
             </div>
           ))}
         </div>
