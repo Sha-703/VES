@@ -56,42 +56,76 @@ def custom_home(request):
 
 
 def serve_media(request, path):
-    """Serve media files even in production (DEBUG=False)."""
-    from django.core.wsgi import get_wsgi_application
+    """Serve media files even in production (DEBUG=False) and development."""
     from pathlib import Path
+    from django.http import Http404
+    import mimetypes
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
+    logger.debug(f"[serve_media] Requested path: {path}")
+    logger.debug(f"[serve_media] MEDIA_ROOT: {settings.MEDIA_ROOT}")
     
     file_path = Path(settings.MEDIA_ROOT) / path
     
     # Security check: prevent directory traversal attacks
     try:
         file_path = file_path.resolve()
-        if not str(file_path).startswith(str(Path(settings.MEDIA_ROOT).resolve())):
-            from django.http import Http404
+        media_root_resolved = Path(settings.MEDIA_ROOT).resolve()
+        logger.debug(f"[serve_media] Resolved path: {file_path}")
+        logger.debug(f"[serve_media] Media root resolved: {media_root_resolved}")
+        
+        if not str(file_path).startswith(str(media_root_resolved)):
+            logger.warning(f"[serve_media] Security check failed: {file_path} is outside {media_root_resolved}")
             raise Http404("File not found")
-    except Exception:
-        from django.http import Http404
-        raise Http404("File not found")
+    except Http404:
+        raise
+    except Exception as e:
+        logger.error(f"[serve_media] Security check error: {e}")
+        raise Http404(f"File not found: {e}")
     
     # Check if file exists
-    if not file_path.exists() or not file_path.is_file():
-        from django.http import Http404
-        raise Http404("File not found")
+    if not file_path.exists():
+        logger.warning(f"[serve_media] File not found: {file_path}")
+        raise Http404(f"File not found at {file_path}")
+    
+    if not file_path.is_file():
+        logger.warning(f"[serve_media] Not a file: {file_path}")
+        raise Http404(f"Not a file: {file_path}")
+    
+    logger.debug(f"[serve_media] Serving file: {file_path}")
+    
+    # Determine MIME type
+    mime_type, _ = mimetypes.guess_type(str(file_path))
+    if mime_type is None:
+        mime_type = 'application/octet-stream'
+    
+    logger.debug(f"[serve_media] MIME type: {mime_type}")
     
     # Serve the file
-    return FileResponse(file_path.open('rb'), as_attachment=False)
+    try:
+        return FileResponse(
+            file_path.open('rb'),
+            content_type=mime_type,
+            as_attachment=False
+        )
+    except Exception as e:
+        logger.error(f"[serve_media] Error serving file: {e}")
+        raise Http404(f"Error serving file: {e}")
 
 
 urlpatterns = [
     path('', custom_home),
     path('admin/', admin.site.urls),
     path('api/', include('elections_app.urls')),
-    # Serve media files even in production (DEBUG=False)
+    # Serve media files - this route is always active (works in both DEBUG=True and DEBUG=False)
     re_path(r'^media/(?P<path>.*)$', serve_media),
 ]
 
 # For development (DEBUG=True), also add the standard static() serving
+# This provides a fallback and ensures compatibility
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 handler404 = 'elections_project.urls.custom_404'
