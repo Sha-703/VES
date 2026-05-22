@@ -9,6 +9,7 @@ import Home from './pages/Home'
 import InstitutionRegister from './pages/InstitutionRegister'
 import InstitutionLogin from './pages/InstitutionLogin'
 import InstitutionDashboard from './pages/InstitutionDashboard'
+import Contact from './pages/Contact'
 import ManageElection from './pages/ManageElection'
 import ManageCandidates from './pages/ManageCandidates'
 import ElectionResults from './pages/ElectionResults'
@@ -39,6 +40,7 @@ function App() {
               {/* Routes Institution */}
               <Route path="/institution/register" element={<InstitutionRegister />} />
               <Route path="/institution/login" element={<InstitutionLogin />} />
+              <Route path="/contact" element={<Contact />} />
               {/* Page de vérification supprimée : les utilisateurs peuvent se connecter immédiatement après l'inscription */}
               <Route path="/institution/dashboard" element={<InstitutionDashboard />} />
               <Route path="/institution/imports" element={<ImportHistory />} />

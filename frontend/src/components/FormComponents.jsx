@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import logo from '../assets/logo-white.svg';
 import { API_HOST } from '../services/api';
 
@@ -73,7 +74,7 @@ export function Footer() {
           </div>
         </div>
         <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
-          Besoin d'aide ? <a href="#" style={{ color: 'white', textDecoration: 'underline' }}>Contact</a>
+          Besoin d'aide ? <Link to="/contact" style={{ color: 'white', textDecoration: 'underline' }}>Contact</Link>
         </div>
       </div>
     </footer>
