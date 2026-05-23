@@ -37,14 +37,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Affiche une alerte utilisateur en français si le token est absent ou invalide
-      if (typeof window !== 'undefined') {
-        window.alert("Votre session a expiré ou vous n'êtes pas authentifié. Veuillez vous reconnecter.");
-      }
+      const requestUrl = error.config?.url || '';
+      const isAuthFlow = requestUrl.includes('/auth/institution/login/') || requestUrl.includes('/auth/voter/login/') || requestUrl.includes('/auth/institution/register/') || requestUrl.includes('/auth/voter/verify_email/');
+
       // Nettoie le token pour forcer la reconnexion
       localStorage.removeItem('token');
       // Redirige vers la page de connexion institution si possible
-      if (typeof window !== 'undefined' && window.location.pathname !== '/institution/login') {
+      if (!isAuthFlow && typeof window !== 'undefined' && window.location.pathname !== '/institution/login') {
         window.location.href = '/';
       }
     }
