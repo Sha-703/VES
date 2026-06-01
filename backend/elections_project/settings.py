@@ -96,6 +96,12 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = []
 
+# Accélérer le hachage des mots de passe en développement local (DEBUG=True)
+if DEBUG:
+    PASSWORD_HASHERS = [
+        'django.contrib.auth.hashers.MD5PasswordHasher',
+    ]
+
 LANGUAGE_CODE = 'fr'
 # Kinshasa local time zone (République démocratique du Congo)
 # See the IANA tz database name: Africa/Kinshasa

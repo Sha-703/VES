@@ -87,7 +87,14 @@ def institution_register(request):
                     "Vous pouvez vous connecter à l'administration Django pour plus de détails."
                 )
                 from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'no-reply@ves'
-                send_mail(subject, body, from_email, recipients, fail_silently=True)
+                # Envoyer l'e-mail de manière asynchrone (arrière-plan) pour éviter de bloquer la création de compte
+                import threading
+                threading.Thread(
+                    target=send_mail,
+                    args=(subject, body, from_email, recipients),
+                    kwargs={'fail_silently': True},
+                    daemon=True
+                ).start()
         except Exception:
             pass
 
